@@ -154,4 +154,1100 @@
     }
 
     .online-box {
-      background: rgba
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .online-box.hidden, .ai-box.hidden {
+      display: none;
+    }
+
+    .room-id-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0f172a;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      font-family: monospace;
+      font-size: 0.92rem;
+      color: var(--accent-gold);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.15s;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: rgba(251, 191, 36, 0.2);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    .btn-danger {
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid var(--accent-pink);
+      color: #fda4af;
+    }
+
+    .btn-sm {
+      padding: 5px 9px;
+      font-size: 0.75rem;
+    }
+
+    .join-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .status-pill {
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .status-pill.connected {
+      background: rgba(34, 197, 94, 0.18);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .board-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    /* 頂部回合與雙方連線進度計分板 */
+    .scoreboard-bar {
+      width: 100%;
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .player-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .lines-counter {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.65);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .score-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .score-num {
+      color: var(--accent-gold);
+      font-size: 1rem;
+    }
+
+    .stone-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .stone-black {
+      background: radial-gradient(circle at 30% 30%, #475569, #020617);
+      border: 1px solid #64748b;
+    }
+
+    .stone-white {
+      background: radial-gradient(circle at 30% 30%, #ffffff, #cbd5e1);
+      border: 1px solid #94a3b8;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 580px;
+      aspect-ratio: 1 / 1;
+      background: var(--board-wood);
+      border: 6px solid var(--board-border);
+      border-radius: 14px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* 達成一條新五連線的浮動提示 */
+    .line-toast {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1.5px solid var(--accent-gold);
+      color: var(--accent-gold);
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    .line-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .win-toast {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .win-toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .win-toast h2 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+      color: var(--accent-gold);
+      text-shadow: 0 0 16px rgba(251, 191, 36, 0.6);
+    }
+
+    .win-toast p {
+      margin: 0 0 18px;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 左側設定與開房面板 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>多線五子棋對弈</h1>
+        <span class="rule-badge" id="ruleBadge">15×15 · 連 1 條線勝</span>
+      </div>
+
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" id="tabAI">單人對戰 AI</button>
+        <button type="button" class="mode-tab" id="tabOnline">遠端開房間</button>
+      </div>
+
+      <!-- 自訂棋盤格數與目標五連線條數 -->
+      <div class="control-row">
+        <div class="control-group">
+          <label for="boardSizeSelect">棋盤格數</label>
+          <select id="boardSizeSelect">
+            <option value="9">9 × 9 (迷你)</option>
+            <option value="11">11 × 11 (小型)</option>
+            <option value="13">13 × 13 (中型)</option>
+            <option value="15" selected>15 × 15 (標準)</option>
+            <option value="17">17 × 17 (大型)</option>
+            <option value="19">19 × 19 (圍棋盤)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="targetLinesSelect">獲勝條件 (5子連幾條)</label>
+          <select id="targetLinesSelect">
+            <option value="1" selected>連成 1 條五子線</option>
+            <option value="2">累積 2 條五子線</option>
+            <option value="3">累積 3 條五子線</option>
+            <option value="4">累積 4 條五子線</option>
+            <option value="5">累積 5 條五子線</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- AI 模式設定 -->
+      <div class="ai-box" id="aiSettingsBox">
+        <div class="control-row">
+          <div class="control-group">
+            <label for="aiDifficulty">AI 難度</label>
+            <select id="aiDifficulty">
+              <option value="easy">入門 (輕鬆)</option>
+              <option value="medium" selected>進階 (攻防兼備)</option>
+              <option value="hard">大師 (深度算路)</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="playerColorSelect">執子順序</label>
+            <select id="playerColorSelect">
+              <option value="1" selected>黑子 (先手)</option>
+              <option value="2">白子 (後手)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 遠端開房間連線區塊 -->
+      <div class="online-box hidden" id="onlineSettingsBox">
+        <div class="control-group">
+          <label>我的房間代碼（分享給朋友加入）</label>
+          <div class="room-id-display">
+            <span id="myRoomId">尚未建立房間</span>
+            <button type="button" class="btn btn-warning btn-sm" id="copyLinkBtn" disabled>複製邀請網址</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="createRoomBtn">建立新房間 (當房主/黑子)</button>
+
+        <div class="control-group">
+          <label for="joinRoomInput">或輸入朋友的房號加入對戰</label>
+          <div class="join-row">
+            <input type="text" id="joinRoomInput" placeholder="貼上房號..." />
+            <button type="button" class="btn btn-success" id="joinRoomBtn">加入</button>
+          </div>
+        </div>
+
+        <div class="status-pill" id="networkStatus">狀態：請點擊「建立新房間」或輸入房號加入</div>
+      </div>
+
+      <div class="control-row">
+        <button type="button" class="btn btn-warning" id="undoBtn">悔棋一步</button>
+        <button type="button" class="btn btn-danger" id="restartBtn">重新開局</button>
+      </div>
+    </aside>
+
+    <!-- 右側棋盤區域 -->
+    <main class="board-section">
+      <div class="scoreboard-bar">
+        <div class="player-indicator">
+          <span class="stone-icon stone-black" id="turnStoneIcon"></span>
+          <span id="turnText">輪到：黑子 (你)</span>
+        </div>
+
+        <!-- 雙方五連線累積計數器 -->
+        <div class="lines-counter">
+          <div class="score-chip">
+            <span class="stone-icon stone-black" style="width:14px;height:14px;"></span>
+            <span>黑子：</span>
+            <span class="score-num" id="blackLinesText">0 / 1</span>
+          </div>
+          <span style="color:rgba(255,255,255,0.2);">|</span>
+          <div class="score-chip">
+            <span class="stone-icon stone-white" style="width:14px;height:14px;"></span>
+            <span>白子：</span>
+            <span class="score-num" id="whiteLinesText">0 / 1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="boardCanvas" width="600" height="600"></canvas>
+        <div class="line-toast" id="lineToast">達成五子連線！+1 條</div>
+        <div class="win-toast" id="winToast">
+          <h2 id="winTitle">黑子獲勝！</h2>
+          <p id="winSubtitle">率先達成 1 條五子連線</p>
+          <button type="button" class="btn btn-primary" id="modalRestartBtn">再來一局</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('boardCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const tabAI = document.getElementById('tabAI');
+    const tabOnline = document.getElementById('tabOnline');
+    const aiSettingsBox = document.getElementById('aiSettingsBox');
+    const onlineSettingsBox = document.getElementById('onlineSettingsBox');
+    const boardSizeSelect = document.getElementById('boardSizeSelect');
+    const targetLinesSelect = document.getElementById('targetLinesSelect');
+    const aiDifficultySelect = document.getElementById('aiDifficulty');
+    const playerColorSelect = document.getElementById('playerColorSelect');
+    const ruleBadge = document.getElementById('ruleBadge');
+
+    const myRoomIdEl = document.getElementById('myRoomId');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const createRoomBtn = document.getElementById('createRoomBtn');
+    const joinRoomInput = document.getElementById('joinRoomInput');
+    const joinRoomBtn = document.getElementById('joinRoomBtn');
+    const networkStatus = document.getElementById('networkStatus');
+
+    const turnStoneIcon = document.getElementById('turnStoneIcon');
+    const turnText = document.getElementById('turnText');
+    const blackLinesText = document.getElementById('blackLinesText');
+    const whiteLinesText = document.getElementById('whiteLinesText');
+    const lineToast = document.getElementById('lineToast');
+
+    const undoBtn = document.getElementById('undoBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const winToast = document.getElementById('winToast');
+    const winTitle = document.getElementById('winTitle');
+    const winSubtitle = document.getElementById('winSubtitle');
+    const modalRestartBtn = document.getElementById('modalRestartBtn');
+
+    // 核心遊戲狀態
+    const FIVE_IN_A_ROW = 5; // 固定 5 顆子算一條線
+    let gameMode = 'ai';
+    let boardSize = 15;
+    let targetLines = 1; // 玩家自訂要連成 1~5 條線才算贏
+    let board = [];
+    let moveHistory = [];
+    let currentTurn = 1;
+    let myColor = 1;
+    let gameOver = false;
+    let hoverPos = null;
+    let lineToastTimer = null;
+
+    // 紀錄所有已形成的五連線（避免重複計算，並在棋盤上持續畫出）
+    // 結構：{ id: string, color: 1|2, start: {r,c}, end: {r,c} }
+    let completedLines = [];
+
+    let peer = null;
+    let conn = null;
+    let isRoomHost = false;
+
+    function initBoardState() {
+      boardSize = Number(boardSizeSelect.value);
+      targetLines = Number(targetLinesSelect.value);
+      ruleBadge.textContent = `${boardSize}×${boardSize} · 連 ${targetLines} 條線勝`;
+
+      board = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
+      moveHistory = [];
+      completedLines = [];
+      currentTurn = 1;
+      gameOver = false;
+      winToast.classList.remove('show');
+      lineToast.classList.remove('show');
+
+      if (gameMode === 'ai') {
+        myColor = Number(playerColorSelect.value);
+        updateScoreAndTurnUI();
+        drawBoard();
+        if (myColor === 2) {
+          setTimeout(makeAIMove, 350);
+        }
+      } else {
+        updateScoreAndTurnUI();
+        drawBoard();
+      }
+    }
+
+    function getLineCount(color) {
+      return completedLines.filter(line => line.color === color).length;
+    }
+
+    function updateScoreAndTurnUI() {
+      const blackCount = getLineCount(1);
+      const whiteCount = getLineCount(2);
+      blackLinesText.textContent = `${blackCount} / ${targetLines}`;
+      whiteLinesText.textContent = `${whiteCount} / ${targetLines}`;
+
+      turnStoneIcon.className = `stone-icon ${currentTurn === 1 ? 'stone-black' : 'stone-white'}`;
+      const colorName = currentTurn === 1 ? '黑子' : '白子';
+
+      if (gameMode === 'ai') {
+        const who = currentTurn === myColor ? '你' : 'AI 電腦';
+        turnText.textContent = `輪到：${colorName} (${who})`;
+      } else {
+        if (!conn || !conn.open) {
+          turnText.textContent = '等待對手連線中...';
+        } else {
+          const who = currentTurn === myColor ? '你的回合' : '對手思考中';
+          turnText.textContent = `輪到：${colorName} (${who})`;
+        }
+      }
+    }
+
+    function showNewLineToast(color, count) {
+      clearTimeout(lineToastTimer);
+      const name = color === 1 ? '黑子' : '白子';
+      lineToast.textContent = `${name}達成五子連線！目前累積 ${count} / ${targetLines} 條`;
+      lineToast.classList.add('show');
+      lineToastTimer = setTimeout(() => {
+        lineToast.classList.remove('show');
+      }, 1800);
+    }
+
+    // 掃描棋盤上所有獨立的 5 子連線（支援重疊與多方向，且不重複計算同一組 5 顆子）
+    function recalculateAllFiveLines() {
+      const dirs = [
+        [0, 1],  // 水平
+        [1, 0],  // 垂直
+        [1, 1],  // 右下斜
+        [1, -1]  // 左下斜
+      ];
+      const foundLines = [];
+      const seenIds = new Set();
+
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const color = board[r][c];
+          if (color === 0) continue;
+
+          for (const [dr, dc] of dirs) {
+            const endR = r + dr * (FIVE_IN_A_ROW - 1);
+            const endC = c + dc * (FIVE_IN_A_ROW - 1);
+            if (endR < 0 || endR >= boardSize || endC < 0 || endC >= boardSize) continue;
+
+            // 檢查連續 5 格是否為同色
+            let match = true;
+            const cells = [];
+            for (let step = 0; step < FIVE_IN_A_ROW; step++) {
+              const nr = r + dr * step;
+              const nc = c + dc * step;
+              if (board[nr][nc] !== color) {
+                match = false;
+                break;
+              }
+              cells.push(`${nr},${nc}`);
+            }
+
+            if (match) {
+              // 若同一方向連成 6 顆以上，只取前 5 顆為一條獨立五連珠，避免移動一格就多算一條
+              const prevR = r - dr;
+              const prevC = c - dc;
+              const isExtendedFromPrev =
+                prevR >= 0 && prevR < boardSize &&
+                prevC >= 0 && prevC < boardSize &&
+                board[prevR][prevC] === color;
+
+              if (!isExtendedFromPrev) {
+                const lineId = `${color}:${cells.join('|')}`;
+                if (!seenIds.has(lineId)) {
+                  seenIds.add(lineId);
+                  foundLines.push({
+                    id: lineId,
+                    color,
+                    start: { r, c },
+                    end: { r: endR, c: endC }
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+      return foundLines;
+    }
+
+    function drawBoard() {
+      const W = canvas.width;
+      const padding = W * 0.065;
+      const cellSize = (W - padding * 2) / (boardSize - 1);
+
+      ctx.clearRect(0, 0, W, W);
+
+      const grad = ctx.createLinearGradient(0, 0, W, W);
+      grad.addColorStop(0, '#e6c288');
+      grad.addColorStop(1, '#cfa363');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, W);
+
+      // 網格線
+      ctx.strokeStyle = '#4a3219';
+      ctx.lineWidth = boardSize > 15 ? 1.3 : 1.8;
+      for (let i = 0; i < boardSize; i++) {
+        const pos = padding + i * cellSize;
+        ctx.beginPath();
+        ctx.moveTo(padding, pos);
+        ctx.lineTo(W - padding, pos);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(pos, padding);
+        ctx.lineTo(pos, W - padding);
+        ctx.stroke();
+      }
+
+      // 星位點
+      const stars = getStarPoints(boardSize);
+      ctx.fillStyle = '#3b2510';
+      stars.forEach(([r, c]) => {
+        ctx.beginPath();
+        ctx.arc(padding + c * cellSize, padding + r * cellSize, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 滑鼠懸停預覽
+      if (!gameOver && hoverPos && board[hoverPos.r][hoverPos.c] === 0) {
+        const canMove = (gameMode === 'ai' && currentTurn === myColor) ||
+                        (gameMode === 'online' && conn && conn.open && currentTurn === myColor);
+        if (canMove) {
+          const hx = padding + hoverPos.c * cellSize;
+          const hy = padding + hoverPos.r * cellSize;
+          ctx.save();
+          ctx.globalAlpha = 0.45;
+          ctx.fillStyle = myColor === 1 ? '#0f172a' : '#ffffff';
+          ctx.beginPath();
+          ctx.arc(hx, hy, cellSize * 0.42, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 繪製所有棋子
+      const lastMove = moveHistory[moveHistory.length - 1];
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          const stone = board[r][c];
+          if (stone === 0) continue;
+
+          const cx = padding + c * cellSize;
+          const cy = padding + r * cellSize;
+          const rad = cellSize * 0.43;
+
+          ctx.save();
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+          ctx.shadowBlur = 5;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
+
+          const sGrad = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.3, rad * 0.1, cx, cy, rad);
+          if (stone === 1) {
+            sGrad.addColorStop(0, '#475569');
+            sGrad.addColorStop(1, '#020617');
+          } else {
+            sGrad.addColorStop(0, '#ffffff');
+            sGrad.addColorStop(1, '#cbd5e1');
+          }
+          ctx.fillStyle = sGrad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          if (lastMove && lastMove.r === r && lastMove.c === c) {
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(cx, cy, rad * 0.22, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // 繪製所有已達成的五子連線軌跡（黑子用紅光線、白子用藍光線區分）
+      completedLines.forEach(line => {
+        ctx.save();
+        ctx.strokeStyle = line.color === 1 ? '#f43f5e' : '#0284c7';
+        ctx.lineWidth = 4.5;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = line.color === 1 ? '#f43f5e' : '#38bdf8';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(padding + line.start.c * cellSize, padding + line.start.r * cellSize);
+        ctx.lineTo(padding + line.end.c * cellSize, padding + line.end.r * cellSize);
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    function getStarPoints(size) {
+      const mid = Math.floor(size / 2);
+      if (size < 11) return [[mid, mid]];
+      const edge = size >= 15 ? 3 : 2;
+      return [
+        [edge, edge],
+        [edge, size - 1 - edge],
+        [mid, mid],
+        [size - 1 - edge, edge],
+        [size - 1 - edge, size - 1 - edge]
+      ];
+    }
+
+    function getGridPosFromEvent(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = (clientX - rect.left) * scaleX;
+      const y = (clientY - rect.top) * scaleY;
+
+      const padding = canvas.width * 0.065;
+      const cellSize = (canvas.width - padding * 2) / (boardSize - 1);
+      const c = Math.round((x - padding) / cellSize);
+      const r = Math.round((y - padding) / cellSize);
+
+      if (r >= 0 && r < boardSize && c >= 0 && c < boardSize) {
+        return { r, c };
+      }
+      return null;
+    }
+
+    function placeStone(r, c, color, isRemote = false) {
+      if (gameOver || board[r][c] !== 0) return false;
+
+      const prevCount = getLineCount(color);
+
+      board[r][c] = color;
+      moveHistory.push({ r, c, color });
+
+      if (gameMode === 'online' && !isRemote && conn && conn.open) {
+        conn.send({ type: 'MOVE', r, c, color });
+      }
+
+      // 重新計算場上所有五子連線
+      completedLines = recalculateAllFiveLines();
+      const newCount = getLineCount(color);
+
+      // 若本次落子新增了至少 1 條五子連線
+      if (newCount > prevCount) {
+        if (newCount >= targetLines) {
+          gameOver = true;
+          updateScoreAndTurnUI();
+          drawBoard();
+          const winnerName = color === 1 ? '黑子' : '白子';
+          winTitle.textContent = `${winnerName} 獲勝！`;
+          winSubtitle.textContent = `率先累積達成 ${newCount} 條五子連線`;
+          winToast.classList.add('show');
+          return true;
+        } else {
+          showNewLineToast(color, newCount);
+        }
+      }
+
+      // 棋盤下滿時的結算（比較雙方累積條數）
+      if (moveHistory.length === boardSize * boardSize) {
+        gameOver = true;
+        updateScoreAndTurnUI();
+        drawBoard();
+        const bLines = getLineCount(1);
+        const wLines = getLineCount(2);
+        if (bLines > wLines) {
+          winTitle.textContent = '黑子獲勝！';
+          winSubtitle.textContent = `棋盤已滿，黑子以 ${bLines} 條對 ${wLines} 條勝出`;
+        } else if (wLines > bLines) {
+          winTitle.textContent = '白子獲勝！';
+          winSubtitle.textContent = `棋盤已滿，白子以 ${wLines} 條對 ${bLines} 條勝出`;
+        } else {
+          winTitle.textContent = '平局！';
+          winSubtitle.textContent = `棋盤已滿，雙方皆累積 ${bLines} 條五子連線`;
+        }
+        winToast.classList.add('show');
+        return true;
+      }
+
+      currentTurn = color === 1 ? 2 : 1;
+      updateScoreAndTurnUI();
+      drawBoard();
+
+      if (gameMode === 'ai' && !gameOver && currentTurn !== myColor) {
+        setTimeout(makeAIMove, 280);
+      }
+
+      return true;
+    }
+
+    // 智慧 AI 算路（永遠以「5 子連線」為評估基準，並持續累積多條線）
+    function makeAIMove() {
+      if (gameOver || gameMode !== 'ai') return;
+      const aiColor = myColor === 1 ? 2 : 1;
+      const diff = aiDifficultySelect.value;
+
+      if (moveHistory.length === 0) {
+        const mid = Math.floor(boardSize / 2);
+        placeStone(mid, mid, aiColor);
+        return;
+      }
+
+      let bestScore = -Infinity;
+      let candidates = [];
+
+      for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
+          if (board[r][c] !== 0) continue;
+          if (!hasNeighbor(r, c, 2)) continue;
+
+          const attackScore = evaluateFiveLinePoint(r, c, aiColor);
+          const defendScore = evaluateFiveLinePoint(r, c, myColor);
+
+          let total = attackScore * 1.15 + defendScore;
+          if (diff === 'easy') {
+            total += Math.random() * 450;
+          } else if (diff === 'medium') {
+            total += Math.random() * 45;
+          } else {
+            if (attackScore >= 100000) total += 600000;
+            if (defendScore >= 100000) total += 300000;
+            total += Math.random() * 8;
+          }
+
+          if (total > bestScore) {
+            bestScore = total;
+            candidates = [{ r, c }];
+          } else if (Math.abs(total - bestScore) < 1) {
+            candidates.push({ r, c });
+          }
+        }
+      }
+
+      const choice = candidates.length > 0
+        ? candidates[Math.floor(Math.random() * candidates.length)]
+        : { r: Math.floor(boardSize / 2), c: Math.floor(boardSize / 2) };
+
+      placeStone(choice.r, choice.c, aiColor);
+    }
+
+    function hasNeighbor(r, c, dist) {
+      for (let dr = -dist; dr <= dist; dr++) {
+        for (let dc = -dist; dc <= dist; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] !== 0) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function evaluateFiveLinePoint(r, c, color) {
+      const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      let score = 0;
+
+      for (const [dr, dc] of dirs) {
+        let count = 1;
+        let openEnds = 0;
+
+        let nr = r + dr, nc = c + dc;
+        while (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === color) {
+          count++;
+          nr += dr;
+          nc += dc;
+        }
+        if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === 0) {
+          openEnds++;
+        }
+
+        nr = r - dr;
+        nc = c - dc;
+        while (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === color) {
+          count++;
+          nr -= dr;
+          nc -= dc;
+        }
+        if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === 0) {
+          openEnds++;
+        }
+
+        // 若該位置能形成剛好 5 連珠（或推進活四/活三）給予高分
+        if (count === 5) {
+          score += 100000;
+        } else if (count === 4) {
+          score += openEnds === 2 ? 18000 : (openEnds === 1 ? 3000 : 0);
+        } else if (count === 3) {
+          score += openEnds === 2 ? 1500 : (openEnds === 1 ? 300 : 0);
+        } else if (count === 2) {
+          score += openEnds === 2 ? 150 : 30;
+        } else if (count > 5) {
+          // 超過 5 顆不會再多算一條線，權重略降以鼓勵尋找新的五連路線
+          score += 500;
+        }
+      }
+      return score;
+    }
+
+    canvas.addEventListener('mousemove', e => {
+      hoverPos = getGridPosFromEvent(e);
+      drawBoard();
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      hoverPos = null;
+      drawBoard();
+    });
+
+    canvas.addEventListener('click', e => {
+      if (gameOver) return;
+      const pos = getGridPosFromEvent(e);
+      if (!pos) return;
+
+      if (gameMode === 'ai') {
+        if (currentTurn !== myColor) return;
+        placeStone(pos.r, pos.c, myColor);
+      } else {
+        if (!conn || !conn.open) {
+          alert('尚未與對手連線！請先建立房間並分享邀請網址，或輸入房號加入。');
+          return;
+        }
+        if (currentTurn !== myColor) return;
+        placeStone(pos.r, pos.c, myColor);
+      }
+    });
+
+    // 悔棋（同步重新計算累積條數）
+    function performUndo(isRemote = false) {
+      if (moveHistory.length === 0 || gameOver) return;
+
+      if (gameMode === 'ai') {
+        const steps = moveHistory.length >= 2 ? 2 : 1;
+        for (let i = 0; i < steps; i++) {
+          const last = moveHistory.pop();
+          if (last) board[last.r][last.c] = 0;
+        }
+        currentTurn = myColor;
+      } else {
+        const last = moveHistory.pop();
+        if (last) {
+          board[last.r][last.c] = 0;
+          currentTurn = last.color;
+        }
+        if (!isRemote && conn && conn.open) {
+          conn.send({ type: 'UNDO' });
+        }
+      }
+      completedLines = recalculateAllFiveLines();
+      updateScoreAndTurnUI();
+      drawBoard();
+    }
+
+    undoBtn.addEventListener('click', () => performUndo(false));
+
+    restartBtn.addEventListener('click', () => {
+      if (gameMode === 'online' && conn && conn.open) {
+        if (!isRoomHost) {
+          alert('僅房主可以更改規則與重新開局！');
+          return;
+        }
+        initBoardState();
+        conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
+      } else {
+        initBoardState();
+      }
+    });
+
+    modalRestartBtn.addEventListener('click', () => restartBtn.click());
+
+    boardSizeSelect.addEventListener('change', () => {
+      if (gameMode === 'online' && conn && conn.open && isRoomHost) {
+        initBoardState();
+        conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
+      } else {
+        initBoardState();
+      }
+    });
+
+    targetLinesSelect.addEventListener('change', () => {
+      if (gameMode === 'online' && conn && conn.open && isRoomHost) {
+        initBoardState();
+        conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
+      } else {
+        initBoardState();
+      }
+    });
+
+    aiDifficultySelect.addEventListener('change', initBoardState);
+    playerColorSelect.addEventListener('change', initBoardState);
+
+    tabAI.addEventListener('click', () => {
+      gameMode = 'ai';
+      tabAI.classList.add('active');
+      tabOnline.classList.remove('active');
+      aiSettingsBox.classList.remove('hidden');
+      onlineSettingsBox.classList.add('hidden');
+      boardSizeSelect.disabled = false;
+      targetLinesSelect.disabled = false;
+      initBoardState();
+    });
+
+    tabOnline.addEventListener('click', () => {
+      gameMode = 'online';
+      tabOnline.classList.add('active');
+      tabAI.classList.remove('active');
+      onlineSettingsBox.classList.remove('hidden');
+      aiSettingsBox.classList.add('hidden');
+      initBoardState();
+    });
+
+    // PeerJS 遠端連線系統
+    function setupPeerConnection(connection) {
+      conn = connection;
+
+      conn.on('open', () => {
+        networkStatus.textContent = isRoomHost
+          ? '狀態：對手已加入房間！你執【黑子】先手'
+          : '狀態：已成功連入房間！你執【白子】後手';
+        networkStatus.classList.add('connected');
+
+        if (isRoomHost) {
+          myColor = 1;
+          boardSizeSelect.disabled = false;
+          targetLinesSelect.disabled = false;
+          initBoardState();
+          conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
+        } else {
+          myColor = 2;
+          boardSizeSelect.disabled = true;
+          targetLinesSelect.disabled = true;
+        }
+        updateScoreAndTurnUI();
+      });
+
+      conn.on('data', data => {
+        if (data.type === 'SYNC_CONFIG') {
+          boardSizeSelect.value = String(data.boardSize);
+          targetLinesSelect.value = String(data.targetLines);
+          initBoardState();
+        } else if (data.type === 'MOVE') {
+          placeStone(data.r, data.c, data.color, true);
+        } else if (data.type === 'UNDO') {
+          performUndo(true);
+        }
+      });
+
+      conn.on('close', () => {
+        networkStatus.textContent = '狀態：對手已離開房間，連線中斷';
+        networkStatus.classList.remove('connected');
+        boardSizeSelect.disabled = false;
+        targetLinesSelect.disabled = false;
+        updateScoreAndTurnUI();
+      });
+    }
+
+    createRoomBtn.addEventListener('click', () => {
+      if (peer) peer.destroy();
+      isRoomHost = true;
+      myColor = 1;
+      const shortCode = 'GMK-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+      networkStatus.textContent = '狀態：正在向雲端註冊房號...';
+      networkStatus.classList.remove('connected');
+
+      peer = new Peer(shortCode);
+
+      peer.on('open', id => {
+        myRoomIdEl.textContent = id;
+        copyLinkBtn.disabled = false;
+        networkStatus.textContent = '狀態：房間已建立！請複製邀請網址傳給朋友';
+      });
+
+      peer.on('connection', incomingConn => {
+        setupPeerConnection(incomingConn);
+      });
+
+      peer.on('error', err => {
+        networkStatus.textContent = `連線錯誤：${err.type}，請重試`;
+      });
+    });
+
+    copyLinkBtn.addEventListener('click', () => {
+      const roomId = myRoomIdEl.textContent;
+      const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+      navigator.clipboard.writeText(inviteUrl).then(() => {
+        copyLinkBtn.textContent = '已複製連結！';
+        setTimeout(() => copyLinkBtn.textContent = '複製邀請網址', 2000);
+      });
+    });
+
+    function joinRoomById(targetId) {
+      const cleanId = targetId.trim();
+      if (!cleanId) return;
+      if (peer) peer.destroy();
+
+      isRoomHost = false;
+      myColor = 2;
+      networkStatus.textContent = `狀態：正在連線至房間 ${cleanId}...`;
+      networkStatus.classList.remove('connected');
+
+      peer = new Peer();
+      peer.on('open', () => {
+        const outgoingConn = peer.connect(cleanId);
+        setupPeerConnection(outgoingConn);
+      });
+
+      peer.on('error', () => {
+        networkStatus.textContent = `加入失敗：找不到房號 ${cleanId}`;
+      });
+    }
+
+    joinRoomBtn.addEventListener('click', () => joinRoomById(joinRoomInput.value));
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const roomParam = params.get('room');
+      if (roomParam) {
+        tabOnline.click();
+        joinRoomInput.value = roomParam;
+        joinRoomById(roomParam);
+      } else {
+        initBoardState();
+      }
+    });
+  </script>
+</body>
+</html>
