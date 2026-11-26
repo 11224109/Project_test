@@ -31,6 +31,11 @@
           <p class="home-note"><span aria-hidden="true">✦</span> 不用下載，打開就能玩</p>
         </div>
 
+        <div class="control-group hidden" id="gridSizeOptions">
+          <label for="gridSizeSelect" id="gridSizeLabel">棋盤格數</label>
+          <select id="gridSizeSelect"></select>
+        </div>
+
         <div class="home-visual" aria-hidden="true">
           <div class="home-visual-label">YOUR NEXT MOVE</div>
           <div class="home-board-art">
@@ -101,11 +106,15 @@
         <span class="rule-badge" id="ruleBadge">五子棋</span>
       </div>
 
+      <button type="button" class="back-home-btn" id="backHomeBtn">
+        <span aria-hidden="true">←</span> 返回主畫面
+      </button>
+
       <div class="control-group">
         <label>選擇棋類遊戲</label>
         <div class="game-grid" id="gameGrid">
           <button type="button" class="game-btn active" data-game="gomoku">五子棋 (多線)</button>
-          <button type="button" class="game-btn" data-game="tictactoe">井字棋 (3×3)</button>
+          <button type="button" class="game-btn" data-game="tictactoe">井字棋 (自由格數)</button>
           <button type="button" class="game-btn" data-game="othello">黑白棋 (翻轉)</button>
           <button type="button" class="game-btn" data-game="watermelon">🍉 西瓜棋</button>
         </div>

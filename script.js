@@ -3,6 +3,7 @@
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
     const appContainer = document.querySelector('.app-container');
+    const backHomeBtn = document.getElementById('backHomeBtn');
 
     const gameBtns = document.querySelectorAll('.game-btn');
     const tabAI = document.getElementById('tabAI');
@@ -12,6 +13,9 @@
     const onlineSettingsBox = document.getElementById('onlineSettingsBox');
 
     const boardSizeSelect = document.getElementById('boardSizeSelect');
+    const gridSizeOptions = document.getElementById('gridSizeOptions');
+    const gridSizeSelect = document.getElementById('gridSizeSelect');
+    const gridSizeLabel = document.getElementById('gridSizeLabel');
     const targetLinesSelect = document.getElementById('targetLinesSelect');
     const aiDifficultySelect = document.getElementById('aiDifficulty');
     const playerColorSelect = document.getElementById('playerColorSelect');
@@ -59,21 +63,21 @@
       tictactoe: `
         <div class="rule-item">
           <h3>🎯 勝利目標</h3>
-          <p>在 <strong>3 × 3</strong> 九宮格內，率先將自己的符號（<strong>X</strong> 或 <strong>O</strong>）在橫、直或對角線連成 <strong>3 格一線</strong>即獲勝。</p>
+          <p>在棋盤上率先將自己的符號（<strong>X</strong> 或 <strong>O</strong>）在橫、直或對角線連成與棋盤邊長相同數量即獲勝；格數越大，勝利所需連線越長。</p>
         </div>
         <div class="rule-item">
           <h3>🕹️ 操作與技巧</h3>
           <ul>
             <li>叉叉 (X) 先手，點擊任意空格即可放置。</li>
             <li>搶佔正中央格與四個角落可創造最多雙向連線機會。</li>
-            <li>若 9 格全滿仍無人連線則判定平局。</li>
+            <li>若棋盤全滿仍無人連線則判定平局。</li>
           </ul>
         </div>
       `,
       othello: `
         <div class="rule-item">
           <h3>🎯 勝利目標</h3>
-          <p>在 <strong>8 × 8</strong> 棋盤上落子夾擊對手，當棋盤下滿或雙方皆無步可走時，場上<strong>棋子數量較多</strong>的一方獲勝。</p>
+          <p>在偶數格數棋盤上落子夾擊對手，當棋盤下滿或雙方皆無步可走時，場上<strong>棋子數量較多</strong>的一方獲勝。</p>
         </div>
         <div class="rule-item">
           <h3>🕹️ 夾擊翻轉規則</h3>
@@ -171,6 +175,11 @@
     let toastTimer = null;
 
     let peer = null, conn = null, isRoomHost = false;
+    const GRID_SIZES = {
+      tictactoe: [3, 5, 7],
+      othello: [6, 8, 10, 12]
+    };
+    const selectedGridSizes = { tictactoe: 3, othello: 8 };
 
     const GAME_META = {
       gomoku:     { title: '五子棋', p1: '黑子', p2: '白子', c1: '#0f172a', c2: '#f8fafc' },
@@ -188,6 +197,15 @@
 
     function initGame() {
       gomokuOptions.classList.toggle('hidden', currentGame !== 'gomoku');
+      const availableGridSizes = GRID_SIZES[currentGame];
+      gridSizeOptions.classList.toggle('hidden', !availableGridSizes);
+      if (availableGridSizes) {
+        gridSizeLabel.textContent = currentGame === 'othello' ? '棋盤格數（偶數）' : '棋盤格數（連線數同步）';
+        gridSizeSelect.innerHTML = availableGridSizes
+          .map(size => `<option value="${size}">${size} × ${size}</option>`)
+          .join('');
+        gridSizeSelect.value = String(selectedGridSizes[currentGame]);
+      }
       const meta = GAME_META[currentGame];
 
       // 更新右側規則說明面板
@@ -199,11 +217,11 @@
         targetLines = Number(targetLinesSelect.value);
         ruleBadge.textContent = `${rows}×${cols} · 連 ${targetLines} 條勝`;
       } else if (currentGame === 'tictactoe') {
-        rows = cols = 3;
-        ruleBadge.textContent = '3×3 · 三子連線';
+        rows = cols = selectedGridSizes.tictactoe;
+        ruleBadge.textContent = `${rows}×${cols} · 連 ${rows} 子勝`;
       } else if (currentGame === 'othello') {
-        rows = cols = 8;
-        ruleBadge.textContent = '8×8 · 夾擊翻轉';
+        rows = cols = selectedGridSizes.othello;
+        ruleBadge.textContent = `${rows}×${cols} · 夾擊翻轉`;
       } else if (currentGame === 'watermelon') {
         ruleBadge.textContent = '21節點 · 圍吃對弈';
       }
@@ -218,8 +236,9 @@
       winToast.classList.remove('show');
 
       if (currentGame === 'othello') {
-        board[3][3] = 2; board[3][4] = 1;
-        board[4][3] = 1; board[4][4] = 2;
+        const middle = rows / 2;
+        board[middle - 1][middle - 1] = 2; board[middle - 1][middle] = 1;
+        board[middle][middle - 1] = 1; board[middle][middle] = 2;
       } else if (currentGame === 'watermelon') {
         // 初始擺子：上方 6 顆紅瓜子(1)，下方 6 顆綠瓜子(2)
         wmPieces = Array(WM_NODES.length).fill(0);
@@ -271,8 +290,8 @@
         p1ScoreText.textContent = `剩 ${c1} 顆`;
         p2ScoreText.textContent = `剩 ${c2} 顆`;
       } else {
-        p1ScoreText.textContent = '3連線';
-        p2ScoreText.textContent = '3連線';
+        p1ScoreText.textContent = `${rows}連線`;
+        p2ScoreText.textContent = `${rows}連線`;
       }
     }
 
@@ -428,35 +447,35 @@
     function drawTicTacToe(W) {
       ctx.fillStyle = '#0f172a';
       ctx.fillRect(0, 0, W, W);
-      const cell = W / 3;
+      const cell = W / cols;
 
       ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 6;
-      for (let i = 1; i < 3; i++) {
+      ctx.lineWidth = Math.max(2, W / 100);
+      for (let i = 1; i < rows; i++) {
         ctx.beginPath(); ctx.moveTo(cell * i, 30); ctx.lineTo(cell * i, W - 30); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(30, cell * i); ctx.lineTo(W - 30, cell * i); ctx.stroke();
       }
 
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
           const val = board[r][c];
-          const cx = c * cell + cell / 2, cy = r * cell + cell / 2, rad = cell * 0.3;
+          const cx = c * cell + cell / 2, cy = r * cell + cell / 2, rad = cell * 0.29;
           if (val === 1) {
-            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 14; ctx.lineCap = 'round';
+            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = Math.max(3, cell * 0.1); ctx.lineCap = 'round';
             ctx.beginPath();
             ctx.moveTo(cx - rad, cy - rad); ctx.lineTo(cx + rad, cy + rad);
             ctx.moveTo(cx + rad, cy - rad); ctx.lineTo(cx - rad, cy + rad);
             ctx.stroke();
           } else if (val === 2) {
-            ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 14;
+            ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = Math.max(3, cell * 0.1);
             ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
           }
         }
       }
 
-      if (winLineCoords.length >= 3) {
+      if (winLineCoords.length >= rows) {
         const s = winLineCoords[0], e = winLineCoords[winLineCoords.length - 1];
-        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 10; ctx.lineCap = 'round';
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = Math.max(4, cell * 0.08); ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(s.c * cell + cell / 2, s.r * cell + cell / 2);
         ctx.lineTo(e.c * cell + cell / 2, e.r * cell + cell / 2);
@@ -467,11 +486,11 @@
     function drawOthello(W) {
       ctx.fillStyle = '#15803d';
       ctx.fillRect(0, 0, W, W);
-      const cell = W / 8;
+      const cell = W / cols;
 
       ctx.strokeStyle = '#052e16';
-      ctx.lineWidth = 2;
-      for (let i = 0; i <= 8; i++) {
+      ctx.lineWidth = Math.max(1, W / 300);
+      for (let i = 0; i <= cols; i++) {
         ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, W); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(W, i * cell); ctx.stroke();
       }
@@ -480,12 +499,12 @@
       validMoves.forEach(m => {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
         ctx.beginPath();
-        ctx.arc(m.c * cell + cell / 2, m.r * cell + cell / 2, 8, 0, Math.PI * 2);
+        ctx.arc(m.c * cell + cell / 2, m.r * cell + cell / 2, Math.min(8, cell * 0.12), 0, Math.PI * 2);
         ctx.fill();
       });
 
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
           if (!board[r][c]) continue;
           ctx.fillStyle = board[r][c] === 1 ? '#0f172a' : '#f8fafc';
           ctx.beginPath();
@@ -671,11 +690,11 @@
           }
         }
       } else if (currentGame === 'tictactoe') {
-        const line = checkLineN(r, c, color, 3);
+        const line = checkLineN(r, c, color, rows);
         if (line) {
           gameOver = true; winLineCoords = line;
           winTitle.textContent = `${winnerName} 獲勝！`;
-          winSubtitle.textContent = '達成三子連線';
+          winSubtitle.textContent = `達成 ${rows} 子連線`;
           winToast.classList.add('show');
           return true;
         }
@@ -753,10 +772,10 @@
       let totalFlips = [];
       for (const [dr, dc] of dirs) {
         let nr = r + dr, nc = c + dc, temp = [];
-        while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === opp) {
+        while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === opp) {
           temp.push([nr, nc]); nr += dr; nc += dc;
         }
-        if (temp.length > 0 && nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === color) {
+        if (temp.length > 0 && nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === color) {
           totalFlips = totalFlips.concat(temp);
         }
       }
@@ -765,8 +784,8 @@
 
     function getOthelloValidMoves(color) {
       const moves = [];
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
           if (board[r][c] === 0 && getOthelloFlips(r, c, color).length > 0) moves.push({ r, c });
         }
       }
@@ -801,15 +820,15 @@
         const moves = getOthelloValidMoves(ai);
         if (moves.length === 0) return;
         moves.sort((a, b) => {
-          const cornerA = (a.r === 0 || a.r === 7) && (a.c === 0 || a.c === 7) ? 100 : 0;
-          const cornerB = (b.r === 0 || b.r === 7) && (b.c === 0 || b.c === 7) ? 100 : 0;
+          const cornerA = (a.r === 0 || a.r === rows - 1) && (a.c === 0 || a.c === cols - 1) ? 100 : 0;
+          const cornerB = (b.r === 0 || b.r === rows - 1) && (b.c === 0 || b.c === cols - 1) ? 100 : 0;
           return (cornerB + getOthelloFlips(b.r, b.c, ai).length) - (cornerA + getOthelloFlips(a.r, a.c, ai).length);
         });
         handleGridMove(moves[0].r, moves[0].c, ai);
         return;
       }
 
-      const targetN = currentGame === 'tictactoe' ? 3 : 5;
+      const targetN = currentGame === 'tictactoe' ? rows : 5;
       let best = -Infinity, picks = [];
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -936,6 +955,10 @@
     document.getElementById('restartBtn').onclick = syncAndReset;
     document.getElementById('modalRestartBtn').onclick = syncAndReset;
     boardSizeSelect.onchange = syncAndReset;
+    gridSizeSelect.onchange = () => {
+      selectedGridSizes[currentGame] = Number(gridSizeSelect.value);
+      syncAndReset();
+    };
     targetLinesSelect.onchange = syncAndReset;
     aiDifficultySelect.onchange = initGame;
     playerColorSelect.onchange = initGame;
@@ -951,6 +974,22 @@
 
     document.getElementById('startSoloBtn').onclick = () => enterArena('gomoku', 'ai');
     document.getElementById('startOnlineBtn').onclick = () => enterArena('gomoku', 'online');
+    backHomeBtn.onclick = () => {
+      homeScreen.classList.remove('hidden');
+      appContainer.classList.add('hidden');
+      if (peer) {
+        peer.destroy();
+        peer = null;
+      }
+      conn = null;
+      isRoomHost = false;
+      myColor = 1;
+      myRoomIdEl.textContent = '尚未建立';
+      copyLinkBtn.disabled = true;
+      copyLinkBtn.textContent = '複製邀請網址';
+      networkStatus.textContent = '狀態：點擊「建立新房間」或輸入房號加入';
+      networkStatus.classList.remove('connected');
+    };
     document.querySelectorAll('[data-home-game]').forEach(button => {
       button.onclick = () => enterArena(button.dataset.homeGame, 'ai');
     });
@@ -995,7 +1034,11 @@
         if (data.type === 'SYNC') {
           currentGame = data.game;
           gameBtns.forEach(b => b.classList.toggle('active', b.dataset.game === currentGame));
-          boardSizeSelect.value = String(data.rows);
+          if (currentGame === 'gomoku') {
+            boardSizeSelect.value = String(data.rows);
+          } else if (GRID_SIZES[currentGame]) {
+            selectedGridSizes[currentGame] = Number(data.rows);
+          }
           targetLinesSelect.value = String(data.targetLines);
           initGame();
         } else if (data.type === 'MOVE') {
