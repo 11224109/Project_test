@@ -23,17 +23,12 @@
         <div class="home-hero-copy">
           <p class="home-eyebrow"><span></span> 思考・佈局・享受對弈</p>
           <h1>把每一步，<br /><span>走成精彩。</span></h1>
-          <p class="home-intro">和 AI 磨練策略，或邀請朋友在線交手。四款棋類，隨時開局。</p>
+          <p class="home-intro">先選擇 AI 對戰或建立房間，再挑選喜歡的棋類與棋盤設定，準備好就開始。</p>
           <div class="home-actions">
-            <button type="button" class="home-primary" id="startSoloBtn">開始單人對戰 <span aria-hidden="true">→</span></button>
-            <button type="button" class="home-secondary" id="startOnlineBtn"><span aria-hidden="true">◎</span> 與朋友連線</button>
+            <button type="button" class="home-primary" id="startSoloBtn">選擇 AI 對戰 <span aria-hidden="true">→</span></button>
+            <button type="button" class="home-secondary" id="startOnlineBtn"><span aria-hidden="true">◎</span> 建立房間</button>
           </div>
-          <p class="home-note"><span aria-hidden="true">✦</span> 不用下載，打開就能玩</p>
-        </div>
-
-        <div class="control-group hidden" id="gridSizeOptions">
-          <label for="gridSizeSelect" id="gridSizeLabel">棋盤格數</label>
-          <select id="gridSizeSelect"></select>
+          <p class="home-note"><span aria-hidden="true">✦</span> 設定完成後才會進入棋盤</p>
         </div>
 
         <div class="home-visual" aria-hidden="true">
@@ -62,32 +57,28 @@
       <section class="home-games" aria-labelledby="homeGamesTitle">
         <div class="home-section-heading">
           <div>
-            <p class="home-eyebrow">PICK YOUR GAME</p>
-            <h2 id="homeGamesTitle">今天想玩哪一款？</h2>
+            <p class="home-eyebrow">AVAILABLE GAMES</p>
+            <h2 id="homeGamesTitle">可選擇的棋類遊戲</h2>
           </div>
-          <span class="home-games-hint">點選遊戲即可開始 <span aria-hidden="true">↗</span></span>
+          <span class="home-games-hint">進入設定後選擇遊戲</span>
         </div>
         <div class="home-game-grid">
-          <button type="button" class="home-game-card" data-home-game="gomoku">
+          <div class="home-game-card">
             <span class="home-game-icon icon-gomoku" aria-hidden="true">●</span>
             <span class="home-game-copy"><strong>五子棋</strong><small>連成五子，搶先獲勝</small></span>
-            <span class="home-game-arrow" aria-hidden="true">↗</span>
-          </button>
-          <button type="button" class="home-game-card" data-home-game="tictactoe">
+          </div>
+          <div class="home-game-card">
             <span class="home-game-icon icon-tictactoe" aria-hidden="true">X O</span>
             <span class="home-game-copy"><strong>井字棋</strong><small>經典九宮格，快速對決</small></span>
-            <span class="home-game-arrow" aria-hidden="true">↗</span>
-          </button>
-          <button type="button" class="home-game-card" data-home-game="othello">
+          </div>
+          <div class="home-game-card">
             <span class="home-game-icon icon-othello" aria-hidden="true">◉</span>
             <span class="home-game-copy"><strong>黑白棋</strong><small>翻轉棋子，掌控棋盤</small></span>
-            <span class="home-game-arrow" aria-hidden="true">↗</span>
-          </button>
-          <button type="button" class="home-game-card" data-home-game="watermelon">
+          </div>
+          <div class="home-game-card">
             <span class="home-game-icon icon-watermelon" aria-hidden="true">🍉</span>
             <span class="home-game-copy"><strong>西瓜棋</strong><small>圍堵對手，趣味攻防</small></span>
-            <span class="home-game-arrow" aria-hidden="true">↗</span>
-          </button>
+          </div>
         </div>
       </section>
 
@@ -98,17 +89,20 @@
     </main>
   </section>
 
-  <div class="app-container hidden">
-    <!-- 左側設定與開房面板 -->
-    <aside class="sidebar">
-      <div class="brand">
-        <h1>多款棋類對戰大廳</h1>
-        <span class="rule-badge" id="ruleBadge">五子棋</span>
-      </div>
-
-      <button type="button" class="back-home-btn" id="backHomeBtn">
+  <section class="setup-screen hidden" id="setupScreen">
+    <header class="setup-header">
+      <button type="button" class="back-home-btn" id="setupBackHomeBtn">
         <span aria-hidden="true">←</span> 返回主畫面
       </button>
+      <span class="setup-mode-badge" id="setupModeBadge">AI 對戰設定</span>
+    </header>
+
+    <div class="setup-panel">
+      <div class="setup-heading">
+        <p class="home-eyebrow"><span></span> GAME SETUP</p>
+        <h1>設定你的對局</h1>
+        <p>選擇遊戲與棋盤規則，按下開始後就會進入棋局。</p>
+      </div>
 
       <div class="control-group">
         <label>選擇棋類遊戲</label>
@@ -120,12 +114,6 @@
         </div>
       </div>
 
-      <div class="mode-tabs">
-        <button type="button" class="mode-tab active" id="tabAI">單人對戰 AI</button>
-        <button type="button" class="mode-tab" id="tabOnline">遠端開房間</button>
-      </div>
-
-      <!-- 五子棋專屬規則設定 -->
       <div class="control-row" id="gomokuOptions">
         <div class="control-group">
           <label for="boardSizeSelect">棋盤格數</label>
@@ -150,6 +138,11 @@
         </div>
       </div>
 
+      <div class="control-group hidden" id="gridSizeOptions">
+        <label for="gridSizeSelect" id="gridSizeLabel">棋盤格數</label>
+        <select id="gridSizeSelect"></select>
+      </div>
+
       <div class="control-row" id="aiSettingsBox">
         <div class="control-group">
           <label for="aiDifficulty">AI 難度</label>
@@ -168,6 +161,29 @@
         </div>
       </div>
 
+      <div class="online-setup-note hidden" id="onlineSetupNote">
+        <span aria-hidden="true">◎</span>
+        <span><strong>房間會在開始遊戲時建立</strong><small>進入棋盤後即可複製房間邀請網址分享給朋友。</small></span>
+      </div>
+
+      <button type="button" class="home-primary setup-start-btn" id="startGameBtn">
+        開始遊戲 <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="app-container hidden">
+    <!-- 對局中的控制面板 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>目前對局</h1>
+        <span class="rule-badge" id="ruleBadge">五子棋</span>
+      </div>
+
+      <button type="button" class="back-home-btn" id="backHomeBtn">
+        <span aria-hidden="true">←</span> 返回主畫面
+      </button>
+
       <div class="online-box hidden" id="onlineSettingsBox">
         <div class="control-group">
           <label>我的房間代碼（分享給朋友）</label>
@@ -176,15 +192,7 @@
             <button type="button" class="btn btn-warning btn-sm" id="copyLinkBtn" disabled>複製邀請網址</button>
           </div>
         </div>
-        <button type="button" class="btn btn-primary" id="createRoomBtn">建立新房間 (當房主)</button>
-        <div class="control-group">
-          <label for="joinRoomInput">或輸入朋友房號加入</label>
-          <div class="join-row">
-            <input type="text" id="joinRoomInput" placeholder="輸入房號..." />
-            <button type="button" class="btn btn-success" id="joinRoomBtn">加入</button>
-          </div>
-        </div>
-        <div class="status-pill" id="networkStatus">狀態：點擊「建立新房間」或輸入房號加入</div>
+        <div class="status-pill" id="networkStatus">狀態：建立房間中...</div>
       </div>
 
       <div class="control-row">

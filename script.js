@@ -2,12 +2,15 @@
     const canvas = document.getElementById('boardCanvas');
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
+    const setupScreen = document.getElementById('setupScreen');
     const appContainer = document.querySelector('.app-container');
     const backHomeBtn = document.getElementById('backHomeBtn');
+    const setupBackHomeBtn = document.getElementById('setupBackHomeBtn');
+    const setupModeBadge = document.getElementById('setupModeBadge');
+    const onlineSetupNote = document.getElementById('onlineSetupNote');
+    const startGameBtn = document.getElementById('startGameBtn');
 
     const gameBtns = document.querySelectorAll('.game-btn');
-    const tabAI = document.getElementById('tabAI');
-    const tabOnline = document.getElementById('tabOnline');
     const gomokuOptions = document.getElementById('gomokuOptions');
     const aiSettingsBox = document.getElementById('aiSettingsBox');
     const onlineSettingsBox = document.getElementById('onlineSettingsBox');
@@ -23,9 +26,6 @@
 
     const myRoomIdEl = document.getElementById('myRoomId');
     const copyLinkBtn = document.getElementById('copyLinkBtn');
-    const createRoomBtn = document.getElementById('createRoomBtn');
-    const joinRoomInput = document.getElementById('joinRoomInput');
-    const joinRoomBtn = document.getElementById('joinRoomBtn');
     const networkStatus = document.getElementById('networkStatus');
 
     const turnStoneIcon = document.getElementById('turnStoneIcon');
@@ -49,7 +49,7 @@
       gomoku: `
         <div class="rule-item">
           <h3>🎯 勝利目標</h3>
-          <p>在橫、直或斜向將 <strong>5 顆同色棋子</strong>連成一線即算 1 條線；率先累積達到左側設定的「目標連線數（1～5 條）」即獲得最終勝利。</p>
+          <p>在橫、直或斜向將 <strong>5 顆同色棋子</strong>連成一線即算 1 條線；率先累積達到設定的「目標連線數（1～5 條）」即獲得最終勝利。</p>
         </div>
         <div class="rule-item">
           <h3>🕹️ 操作與規則</h3>
@@ -963,20 +963,18 @@
     aiDifficultySelect.onchange = initGame;
     playerColorSelect.onchange = initGame;
 
-    function enterArena(gameId, mode) {
+    function openSetup(mode) {
+      gameMode = mode;
       homeScreen.classList.add('hidden');
-      appContainer.classList.remove('hidden');
-      (mode === 'online' ? tabOnline : tabAI).click();
-
-      const gameButton = Array.from(gameBtns).find(button => button.dataset.game === gameId);
-      if (gameButton && !gameButton.classList.contains('active')) gameButton.click();
+      appContainer.classList.add('hidden');
+      setupScreen.classList.remove('hidden');
+      setupModeBadge.textContent = mode === 'online' ? '建立房間設定' : 'AI 對戰設定';
+      aiSettingsBox.classList.toggle('hidden', mode !== 'ai');
+      onlineSetupNote.classList.toggle('hidden', mode !== 'online');
+      initGame();
     }
 
-    document.getElementById('startSoloBtn').onclick = () => enterArena('gomoku', 'ai');
-    document.getElementById('startOnlineBtn').onclick = () => enterArena('gomoku', 'online');
-    backHomeBtn.onclick = () => {
-      homeScreen.classList.remove('hidden');
-      appContainer.classList.add('hidden');
+    function closeConnection() {
       if (peer) {
         peer.destroy();
         peer = null;
@@ -987,39 +985,41 @@
       myRoomIdEl.textContent = '尚未建立';
       copyLinkBtn.disabled = true;
       copyLinkBtn.textContent = '複製邀請網址';
-      networkStatus.textContent = '狀態：點擊「建立新房間」或輸入房號加入';
+      networkStatus.textContent = '狀態：建立房間中...';
       networkStatus.classList.remove('connected');
-    };
-    document.querySelectorAll('[data-home-game]').forEach(button => {
-      button.onclick = () => enterArena(button.dataset.homeGame, 'ai');
-    });
+    }
+
+    function returnToHome() {
+      homeScreen.classList.remove('hidden');
+      setupScreen.classList.add('hidden');
+      appContainer.classList.add('hidden');
+      closeConnection();
+    }
 
     gameBtns.forEach(btn => {
       btn.onclick = () => {
-        if (gameMode === 'online' && conn && conn.open && !isRoomHost) {
-          alert('僅房主可以切換棋類遊戲！');
-          return;
-        }
         gameBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentGame = btn.dataset.game;
-        syncAndReset();
+        initGame();
       };
     });
 
-    tabAI.onclick = () => {
-      gameMode = 'ai';
-      tabAI.classList.add('active'); tabOnline.classList.remove('active');
-      aiSettingsBox.classList.remove('hidden'); onlineSettingsBox.classList.add('hidden');
+    document.getElementById('startSoloBtn').onclick = () => openSetup('ai');
+    document.getElementById('startOnlineBtn').onclick = () => openSetup('online');
+    startGameBtn.onclick = () => {
+      setupScreen.classList.add('hidden');
+      appContainer.classList.remove('hidden');
+      onlineSettingsBox.classList.toggle('hidden', gameMode !== 'online');
       initGame();
+      if (gameMode === 'online') createRoom();
     };
 
-    tabOnline.onclick = () => {
-      gameMode = 'online';
-      tabOnline.classList.add('active'); tabAI.classList.remove('active');
-      onlineSettingsBox.classList.remove('hidden'); aiSettingsBox.classList.add('hidden');
-      initGame();
+    setupBackHomeBtn.onclick = () => {
+      setupScreen.classList.add('hidden');
+      homeScreen.classList.remove('hidden');
     };
+    backHomeBtn.onclick = returnToHome;
 
     function setupConn(c) {
       conn = c;
@@ -1056,7 +1056,7 @@
       });
     }
 
-    createRoomBtn.onclick = () => {
+    function createRoom() {
       if (peer) peer.destroy();
       isRoomHost = true; myColor = 1;
       const code = 'BG-' + Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -1068,7 +1068,7 @@
         networkStatus.textContent = '狀態：房間已建立！複製網址傳給朋友即可開戰';
       });
       peer.on('connection', setupConn);
-    };
+    }
 
     copyLinkBtn.onclick = () => {
       const url = `${window.location.origin}${window.location.pathname}?room=${myRoomIdEl.textContent}`;
@@ -1088,15 +1088,15 @@
       peer.on('open', () => setupConn(peer.connect(clean)));
     }
 
-    joinRoomBtn.onclick = () => joinRoom(joinRoomInput.value);
-
     window.addEventListener('DOMContentLoaded', () => {
       const roomParam = new URLSearchParams(window.location.search).get('room');
       if (roomParam) {
         homeScreen.classList.add('hidden');
+        setupScreen.classList.add('hidden');
         appContainer.classList.remove('hidden');
-        tabOnline.click();
-        joinRoomInput.value = roomParam;
+        gameMode = 'online';
+        onlineSettingsBox.classList.remove('hidden');
+        initGame();
         joinRoom(roomParam);
       } else {
         initGame();
