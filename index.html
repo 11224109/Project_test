@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NEON SNAKE | 復古霓虹貪吃蛇</title>
+  <title>NEON SNAKE | 關卡進階版</title>
   <style>
     :root {
       --bg-color: #0d0f1a;
@@ -12,6 +12,7 @@
       --neon-green: #00ff88;
       --neon-pink: #ff2a85;
       --neon-blue: #00d4ff;
+      --neon-gold: #ffe600;
       --text-main: #e2e8f0;
       --text-muted: #64748b;
     }
@@ -50,40 +51,57 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .title-group {
+      display: flex;
+      flex-direction: column;
     }
 
     .title {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 800;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
       color: var(--neon-blue);
       text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
     }
 
+    .speed-tag {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
     .scoreboard {
       display: flex;
-      gap: 14px;
+      gap: 8px;
       font-variant-numeric: tabular-nums;
     }
 
     .score-box {
       background: var(--screen-bg);
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 10px;
       border: 1px solid #252b48;
       text-align: right;
+      min-width: 58px;
     }
 
     .score-label {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
       display: block;
     }
 
     .score-value {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--neon-green);
+    }
+
+    .score-value.level {
+      color: var(--neon-gold);
     }
 
     .score-value.high {
@@ -106,10 +124,35 @@
       height: 100%;
     }
 
+    /* 關卡升級浮動提示 */
+    .level-banner {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(22, 25, 43, 0.92);
+      border: 1px solid var(--neon-gold);
+      color: var(--neon-gold);
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      box-shadow: 0 0 18px rgba(255, 230, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .level-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(8, 10, 18, 0.85);
+      background: rgba(8, 10, 18, 0.86);
       backdrop-filter: blur(4px);
       display: flex;
       flex-direction: column;
@@ -127,7 +170,7 @@
 
     .overlay h2 {
       margin: 0 0 8px;
-      font-size: 1.6rem;
+      font-size: 1.55rem;
       color: var(--neon-pink);
       text-shadow: 0 0 12px rgba(255, 42, 133, 0.6);
     }
@@ -136,7 +179,7 @@
       margin: 0 0 20px;
       font-size: 0.9rem;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .btn-start {
@@ -149,14 +192,13 @@
       border-radius: 999px;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      transition: transform 0.1s ease;
     }
 
     .btn-start:active {
       transform: scale(0.95);
     }
 
-    /* 手機與觸控方向鍵 */
     .controls {
       margin-top: 18px;
       display: grid;
@@ -203,8 +245,15 @@
 
   <div class="arcade-cabinet">
     <div class="header">
-      <div class="title">NEON SNAKE</div>
+      <div class="title-group">
+        <div class="title">NEON SNAKE</div>
+        <div class="speed-tag" id="speedTag">速度：慢速 (1.0x)</div>
+      </div>
       <div class="scoreboard">
+        <div class="score-box">
+          <span class="score-label">LEVEL</span>
+          <span class="score-value level" id="level">1</span>
+        </div>
         <div class="score-box">
           <span class="score-label">SCORE</span>
           <span class="score-value" id="score">0</span>
@@ -218,10 +267,11 @@
 
     <div class="screen-wrapper">
       <canvas id="gameCanvas" width="400" height="400"></canvas>
+      <div class="level-banner" id="levelBanner">LEVEL UP! 速度提升</div>
       <div class="overlay" id="overlay">
         <h2 id="overlayTitle">NEON SNAKE</h2>
-        <p id="overlayDesc">使用鍵盤方向鍵 / WASD<br>或下方虛擬按鍵控制移動</p>
-        <button class="btn-start" id="startBtn">開始遊戲</button>
+        <p id="overlayDesc">每得 50 分晉級下一關<br>關卡越高，移動速度越快！</p>
+        <button class="btn-start" id="startBtn">開始挑戰</button>
       </div>
     </div>
 
@@ -232,14 +282,17 @@
       <button class="d-btn d-right" data-dir="RIGHT" aria-label="右">▶</button>
     </div>
 
-    <div class="hint">按空白鍵 (Space) 可隨時暫停或重新開始</div>
+    <div class="hint">方向鍵 / WASD 控制移動 · 空白鍵暫停</div>
   </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const levelEl = document.getElementById('level');
     const scoreEl = document.getElementById('score');
     const highScoreEl = document.getElementById('highScore');
+    const speedTagEl = document.getElementById('speedTag');
+    const levelBanner = document.getElementById('levelBanner');
     const overlay = document.getElementById('overlay');
     const overlayTitle = document.getElementById('overlayTitle');
     const overlayDesc = document.getElementById('overlayDesc');
@@ -249,6 +302,16 @@
     const TILE_COUNT = canvas.width / GRID_SIZE;
     const STORAGE_KEY = 'neon_snake_best_score';
 
+    // 關卡設定：每 50 分升一關，速度從 160ms 逐步加快到 55ms
+    const LEVEL_THEMES = [
+      { speed: 160, label: '慢速 (1.0x)', head: '#00ff88', body1: '#00cc6d', body2: '#00b35f' },
+      { speed: 135, label: '輕快 (1.2x)', head: '#00d4ff', body1: '#00a8cc', body2: '#0091b3' },
+      { speed: 110, label: '中速 (1.5x)', head: '#c77dff', body1: '#9d4edd', body2: '#7b2cbf' },
+      { speed: 88,  label: '高速 (1.8x)', head: '#ff9e00', body1: '#ff7b00', body2: '#e85d04' },
+      { speed: 70,  label: '極速 (2.3x)', head: '#ffe600', body1: '#ffd000', body2: '#ffb703' },
+      { speed: 55,  label: '狂暴 (2.9x)', head: '#ff2a85', body1: '#e01e70', body2: '#c9184a' }
+    ];
+
     let snake = [];
     let food = { x: 10, y: 10 };
     let dx = 0;
@@ -256,13 +319,34 @@
     let nextDx = 0;
     let nextDy = 0;
     let score = 0;
+    let level = 1;
     let highScore = Number(localStorage.getItem(STORAGE_KEY)) || 0;
     let gameLoop = null;
-    let speed = 130;
+    let bannerTimer = null;
     let isRunning = false;
     let isPaused = false;
 
     highScoreEl.textContent = highScore;
+
+    function getLevelConfig(lvl) {
+      const index = Math.min(lvl - 1, LEVEL_THEMES.length - 1);
+      return LEVEL_THEMES[index];
+    }
+
+    function updateLevelUI() {
+      const cfg = getLevelConfig(level);
+      levelEl.textContent = level;
+      speedTagEl.textContent = `速度：${cfg.label}`;
+    }
+
+    function showLevelUpBanner(newLevel) {
+      clearTimeout(bannerTimer);
+      levelBanner.textContent = `LEVEL ${newLevel} · 速度提升！`;
+      levelBanner.classList.add('show');
+      bannerTimer = setTimeout(() => {
+        levelBanner.classList.remove('show');
+      }, 1500);
+    }
 
     function initGame() {
       snake = [
@@ -275,9 +359,11 @@
       nextDx = 1;
       nextDy = 0;
       score = 0;
-      speed = 130;
+      level = 1;
       isPaused = false;
       scoreEl.textContent = score;
+      levelBanner.classList.remove('show');
+      updateLevelUI();
       spawnFood();
     }
 
@@ -292,12 +378,17 @@
       }
     }
 
+    function startLoopWithCurrentSpeed() {
+      clearInterval(gameLoop);
+      const cfg = getLevelConfig(level);
+      gameLoop = setInterval(tick, cfg.speed);
+    }
+
     function startGame() {
       initGame();
       isRunning = true;
       overlay.classList.add('hidden');
-      clearInterval(gameLoop);
-      gameLoop = setInterval(tick, speed);
+      startLoopWithCurrentSpeed();
     }
 
     function gameOver() {
@@ -309,8 +400,8 @@
         highScoreEl.textContent = highScore;
       }
       overlayTitle.textContent = 'GAME OVER';
-      overlayDesc.innerHTML = `最終得分：<strong>${score}</strong> 分<br>最高紀錄：${highScore} 分`;
-      startBtn.textContent = '再玩一次';
+      overlayDesc.innerHTML = `抵達關卡：<strong>LEVEL ${level}</strong><br>最終得分：<strong>${score}</strong> 分（最高 ${highScore} 分）`;
+      startBtn.textContent = '再挑戰一次';
       overlay.classList.remove('hidden');
     }
 
@@ -322,29 +413,28 @@
 
       const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
-      // 撞牆判定
       if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
         return gameOver();
       }
 
-      // 撞到自己判定
       if (snake.some(part => part.x === head.x && part.y === head.y)) {
         return gameOver();
       }
 
       snake.unshift(head);
 
-      // 吃到食物
       if (head.x === food.x && head.y === food.y) {
         score += 10;
         scoreEl.textContent = score;
         spawnFood();
 
-        // 隨著分數微幅加速
-        if (speed > 65) {
-          speed -= 2;
-          clearInterval(gameLoop);
-          gameLoop = setInterval(tick, speed);
+        // 每 50 分升一關並加快速度
+        const calculatedLevel = Math.floor(score / 50) + 1;
+        if (calculatedLevel > level) {
+          level = calculatedLevel;
+          updateLevelUI();
+          showLevelUpBanner(level);
+          startLoopWithCurrentSpeed();
         }
       } else {
         snake.pop();
@@ -354,11 +444,11 @@
     }
 
     function draw() {
-      // 清空背景
+      const cfg = getLevelConfig(level);
+
       ctx.fillStyle = '#080a12';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 繪製微弱網格線
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
       ctx.lineWidth = 1;
       for (let i = 0; i <= TILE_COUNT; i++) {
@@ -373,7 +463,7 @@
         ctx.stroke();
       }
 
-      // 繪製食物 (發光粉紅圓點)
+      // 繪製食物
       ctx.save();
       ctx.shadowColor = '#ff2a85';
       ctx.shadowBlur = 12;
@@ -389,16 +479,16 @@
       ctx.fill();
       ctx.restore();
 
-      // 繪製蛇身
+      // 繪製蛇身（顏色隨關卡變化）
       snake.forEach((part, index) => {
         const isHead = index === 0;
         ctx.save();
         if (isHead) {
-          ctx.shadowColor = '#00ff88';
+          ctx.shadowColor = cfg.head;
           ctx.shadowBlur = 10;
-          ctx.fillStyle = '#00ff88';
+          ctx.fillStyle = cfg.head;
         } else {
-          ctx.fillStyle = index % 2 === 0 ? '#00cc6d' : '#00b35f';
+          ctx.fillStyle = index % 2 === 0 ? cfg.body1 : cfg.body2;
         }
         ctx.beginPath();
         ctx.roundRect(
@@ -421,7 +511,6 @@
       if (dir === 'RIGHT' && dx !== -1) { nextDx = 1; nextDy = 0; }
     }
 
-    // 鍵盤事件
     document.addEventListener('keydown', (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
         e.preventDefault();
@@ -439,14 +528,12 @@
       }
     });
 
-    // 觸控與滑鼠方向鍵
     document.querySelectorAll('.d-btn').forEach(btn => {
       btn.addEventListener('click', () => setDirection(btn.dataset.dir));
     });
 
     startBtn.addEventListener('click', startGame);
 
-    // 初始畫面預覽
     initGame();
     draw();
   </script>
