@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NEON SNAKE | 關卡進階版</title>
+  <title>NEON SNAKE | 自選關卡版</title>
   <style>
     :root {
       --bg-color: #0d0f1a;
@@ -85,7 +85,7 @@
       border-radius: 10px;
       border: 1px solid #252b48;
       text-align: right;
-      min-width: 58px;
+      min-width: 56px;
     }
 
     .score-label {
@@ -124,10 +124,9 @@
       height: 100%;
     }
 
-    /* 關卡升級浮動提示 */
     .level-banner {
       position: absolute;
-      top: 18px;
+      top: 16px;
       left: 50%;
       transform: translateX(-50%) translateY(-10px);
       background: rgba(22, 25, 43, 0.92);
@@ -135,7 +134,7 @@
       color: var(--neon-gold);
       padding: 6px 18px;
       border-radius: 999px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 800;
       letter-spacing: 1px;
       box-shadow: 0 0 18px rgba(255, 230, 0, 0.4);
@@ -152,14 +151,14 @@
     .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(8, 10, 18, 0.86);
+      background: rgba(8, 10, 18, 0.88);
       backdrop-filter: blur(4px);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 20px;
+      padding: 18px;
       transition: opacity 0.2s ease;
     }
 
@@ -169,25 +168,85 @@
     }
 
     .overlay h2 {
-      margin: 0 0 8px;
-      font-size: 1.55rem;
+      margin: 0 0 6px;
+      font-size: 1.45rem;
       color: var(--neon-pink);
       text-shadow: 0 0 12px rgba(255, 42, 133, 0.6);
     }
 
     .overlay p {
-      margin: 0 0 20px;
-      font-size: 0.9rem;
+      margin: 0 0 14px;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      line-height: 1.6;
+      line-height: 1.45;
+    }
+
+    /* 關卡選擇器樣式 */
+    .level-picker-label {
+      font-size: 0.75rem;
+      color: var(--neon-blue);
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+      max-width: 280px;
+      margin-bottom: 18px;
+    }
+
+    .lvl-btn {
+      background: #1a1f36;
+      border: 1.5px solid #2e365c;
+      border-radius: 10px;
+      padding: 7px 4px;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.15s ease;
+    }
+
+    .lvl-btn .lvl-num {
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .lvl-btn .lvl-desc {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .lvl-btn:hover {
+      border-color: var(--neon-blue);
+    }
+
+    .lvl-btn.active {
+      background: rgba(0, 212, 255, 0.15);
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+    }
+
+    .lvl-btn.active .lvl-num {
+      color: var(--neon-blue);
+    }
+
+    .lvl-btn.active .lvl-desc {
+      color: #cbd5e1;
     }
 
     .btn-start {
       background: linear-gradient(135deg, var(--neon-blue), #0077ff);
       color: #fff;
       border: none;
-      padding: 12px 28px;
-      font-size: 1rem;
+      padding: 11px 30px;
+      font-size: 0.98rem;
       font-weight: 700;
       border-radius: 999px;
       cursor: pointer;
@@ -270,7 +329,36 @@
       <div class="level-banner" id="levelBanner">LEVEL UP! 速度提升</div>
       <div class="overlay" id="overlay">
         <h2 id="overlayTitle">NEON SNAKE</h2>
-        <p id="overlayDesc">每得 50 分晉級下一關<br>關卡越高，移動速度越快！</p>
+        <p id="overlayDesc">選擇起始關卡，每得 50 分繼續晉級！</p>
+
+        <div class="level-picker-label">選擇起始關卡</div>
+        <div class="level-grid" id="levelGrid">
+          <button type="button" class="lvl-btn active" data-lvl="1">
+            <span class="lvl-num">LV 1</span>
+            <span class="lvl-desc">慢速 1.0x</span>
+          </button>
+          <button type="button" class="lvl-btn" data-lvl="2">
+            <span class="lvl-num">LV 2</span>
+            <span class="lvl-desc">輕快 1.2x</span>
+          </button>
+          <button type="button" class="lvl-btn" data-lvl="3">
+            <span class="lvl-num">LV 3</span>
+            <span class="lvl-desc">中速 1.5x</span>
+          </button>
+          <button type="button" class="lvl-btn" data-lvl="4">
+            <span class="lvl-num">LV 4</span>
+            <span class="lvl-desc">高速 1.8x</span>
+          </button>
+          <button type="button" class="lvl-btn" data-lvl="5">
+            <span class="lvl-num">LV 5</span>
+            <span class="lvl-desc">極速 2.3x</span>
+          </button>
+          <button type="button" class="lvl-btn" data-lvl="6">
+            <span class="lvl-num">LV 6</span>
+            <span class="lvl-desc">狂暴 2.9x</span>
+          </button>
+        </div>
+
         <button class="btn-start" id="startBtn">開始挑戰</button>
       </div>
     </div>
@@ -297,12 +385,12 @@
     const overlayTitle = document.getElementById('overlayTitle');
     const overlayDesc = document.getElementById('overlayDesc');
     const startBtn = document.getElementById('startBtn');
+    const lvlButtons = document.querySelectorAll('.lvl-btn');
 
     const GRID_SIZE = 20;
     const TILE_COUNT = canvas.width / GRID_SIZE;
     const STORAGE_KEY = 'neon_snake_best_score';
 
-    // 關卡設定：每 50 分升一關，速度從 160ms 逐步加快到 55ms
     const LEVEL_THEMES = [
       { speed: 160, label: '慢速 (1.0x)', head: '#00ff88', body1: '#00cc6d', body2: '#00b35f' },
       { speed: 135, label: '輕快 (1.2x)', head: '#00d4ff', body1: '#00a8cc', body2: '#0091b3' },
@@ -319,6 +407,7 @@
     let nextDx = 0;
     let nextDy = 0;
     let score = 0;
+    let selectedStartLevel = 1;
     let level = 1;
     let highScore = Number(localStorage.getItem(STORAGE_KEY)) || 0;
     let gameLoop = null;
@@ -348,6 +437,18 @@
       }, 1500);
     }
 
+    // 關卡選擇按鈕點擊事件
+    lvlButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        lvlButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedStartLevel = Number(btn.dataset.lvl);
+        level = selectedStartLevel;
+        updateLevelUI();
+        draw(); // 即時預覽該關卡蛇身顏色
+      });
+    });
+
     function initGame() {
       snake = [
         { x: 10, y: 10 },
@@ -359,7 +460,7 @@
       nextDx = 1;
       nextDy = 0;
       score = 0;
-      level = 1;
+      level = selectedStartLevel;
       isPaused = false;
       scoreEl.textContent = score;
       levelBanner.classList.remove('show');
@@ -400,7 +501,7 @@
         highScoreEl.textContent = highScore;
       }
       overlayTitle.textContent = 'GAME OVER';
-      overlayDesc.innerHTML = `抵達關卡：<strong>LEVEL ${level}</strong><br>最終得分：<strong>${score}</strong> 分（最高 ${highScore} 分）`;
+      overlayDesc.innerHTML = `抵達關卡：<strong>LEVEL ${level}</strong> · 得分：<strong>${score}</strong> 分`;
       startBtn.textContent = '再挑戰一次';
       overlay.classList.remove('hidden');
     }
@@ -428,8 +529,8 @@
         scoreEl.textContent = score;
         spawnFood();
 
-        // 每 50 分升一關並加快速度
-        const calculatedLevel = Math.floor(score / 50) + 1;
+        // 以選擇的起始關卡為基準，每 50 分往上升一關
+        const calculatedLevel = selectedStartLevel + Math.floor(score / 50);
         if (calculatedLevel > level) {
           level = calculatedLevel;
           updateLevelUI();
@@ -463,7 +564,6 @@
         ctx.stroke();
       }
 
-      // 繪製食物
       ctx.save();
       ctx.shadowColor = '#ff2a85';
       ctx.shadowBlur = 12;
@@ -479,7 +579,6 @@
       ctx.fill();
       ctx.restore();
 
-      // 繪製蛇身（顏色隨關卡變化）
       snake.forEach((part, index) => {
         const isHead = index === 0;
         ctx.save();
