@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>GOMOKU MULTI-LINE | 多線五子棋對戰</title>
+  <title>BOARD GAME ARENA | 多款棋類對戰大廳</title>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     :root {
       --bg-dark: #0f172a;
       --panel-bg: #1e293b;
-      --board-wood: #deb887;
-      --board-border: #8b5a2b;
       --accent-cyan: #38bdf8;
       --accent-gold: #fbbf24;
       --accent-pink: #f43f5e;
@@ -19,11 +17,7 @@
       --text-muted: #94a3b8;
     }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
@@ -32,28 +26,39 @@
       color: var(--text-main);
       font-family: 'Segoe UI', 'Microsoft JhengHei', system-ui, sans-serif;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 14px;
+      justify-content: center;
+      padding: 16px;
     }
 
+    /* 三欄式版面：左側控制 + 中間棋盤 + 右側遊戲規則 */
     .app-container {
       width: 100%;
-      max-width: 980px;
+      max-width: 1280px;
       display: grid;
-      grid-template-columns: 330px 1fr;
+      grid-template-columns: 310px minmax(340px, 560px) 290px;
       gap: 18px;
       align-items: start;
+      justify-content: center;
     }
 
-    @media (max-width: 840px) {
+    @media (max-width: 1120px) {
+      .app-container {
+        grid-template-columns: 310px 1fr;
+        max-width: 920px;
+      }
+      .rules-panel {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 780px) {
       .app-container {
         grid-template-columns: 1fr;
         max-width: 540px;
       }
     }
 
-    .sidebar {
+    .sidebar, .rules-panel {
       background: var(--panel-bg);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px;
@@ -61,7 +66,7 @@
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 13px;
     }
 
     .brand {
@@ -72,21 +77,45 @@
       padding-bottom: 10px;
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: 1.15rem;
-      color: var(--accent-cyan);
-    }
+    .brand h1 { margin: 0; font-size: 1.12rem; color: var(--accent-cyan); }
 
     .rule-badge {
       background: rgba(251, 191, 36, 0.15);
       border: 1px solid rgba(251, 191, 36, 0.4);
       color: var(--accent-gold);
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 800;
       padding: 3px 9px;
       border-radius: 999px;
     }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .game-btn {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      padding: 9px 8px;
+      border-radius: 11px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .game-btn:hover:not(:disabled) { border-color: var(--accent-cyan); color: #fff; }
+    .game-btn.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--accent-cyan);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+    .game-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .mode-tabs {
       display: grid;
@@ -103,10 +132,9 @@
       color: var(--text-muted);
       padding: 8px;
       border-radius: 9px;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.15s;
     }
 
     .mode-tab.active {
@@ -115,23 +143,11 @@
       box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
     }
 
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .control-group { display: flex; flex-direction: column; gap: 5px; }
+    .control-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hidden { display: none !important; }
 
-    .control-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
+    label { font-size: 0.76rem; color: var(--text-muted); font-weight: 700; }
 
     select, input[type="text"] {
       width: 100%;
@@ -140,17 +156,8 @@
       color: #fff;
       padding: 8px 10px;
       border-radius: 10px;
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       outline: none;
-    }
-
-    select:focus, input[type="text"]:focus {
-      border-color: var(--accent-cyan);
-    }
-
-    select:disabled, input:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
 
     .online-box {
@@ -160,11 +167,7 @@
       padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-
-    .online-box.hidden, .ai-box.hidden {
-      display: none;
+      gap: 9px;
     }
 
     .room-id-display {
@@ -172,11 +175,11 @@
       align-items: center;
       justify-content: space-between;
       background: #0f172a;
-      padding: 8px 10px;
+      padding: 7px 10px;
       border-radius: 10px;
       border: 1px dashed rgba(255, 255, 255, 0.25);
       font-family: monospace;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       color: var(--accent-gold);
     }
 
@@ -184,59 +187,26 @@
       border: none;
       border-radius: 10px;
       padding: 9px 12px;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 800;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.15s;
       display: inline-flex;
       justify-content: center;
       align-items: center;
       gap: 6px;
     }
 
-    .btn:active {
-      transform: scale(0.97);
-    }
-
-    .btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #38bdf8, #2563eb);
-      color: #fff;
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #22c55e, #15803d);
-      color: #fff;
-    }
-
-    .btn-warning {
-      background: rgba(251, 191, 36, 0.2);
-      border: 1px solid var(--accent-gold);
-      color: var(--accent-gold);
-    }
-
-    .btn-danger {
-      background: rgba(244, 63, 94, 0.2);
-      border: 1px solid var(--accent-pink);
-      color: #fda4af;
-    }
-
-    .btn-sm {
-      padding: 5px 9px;
-      font-size: 0.75rem;
-    }
-
-    .join-row {
-      display: flex;
-      gap: 6px;
-    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; }
+    .btn-success { background: linear-gradient(135deg, #22c55e, #15803d); color: #fff; }
+    .btn-warning { background: rgba(251, 191, 36, 0.2); border: 1px solid var(--accent-gold); color: var(--accent-gold); }
+    .btn-danger { background: rgba(244, 63, 94, 0.2); border: 1px solid var(--accent-pink); color: #fda4af; }
+    .btn-sm { padding: 5px 9px; font-size: 0.74rem; }
+    .join-row { display: flex; gap: 6px; }
 
     .status-pill {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       padding: 6px 10px;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.06);
@@ -250,6 +220,7 @@
       border: 1px solid rgba(34, 197, 94, 0.4);
     }
 
+    /* 中間棋盤區 */
     .board-section {
       display: flex;
       flex-direction: column;
@@ -258,7 +229,6 @@
       width: 100%;
     }
 
-    /* 頂部回合與雙方連線進度計分板 */
     .scoreboard-bar {
       width: 100%;
       background: var(--panel-bg);
@@ -273,13 +243,7 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     }
 
-    .player-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 800;
-      font-size: 0.92rem;
-    }
+    .player-indicator { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 0.92rem; }
 
     .lines-counter {
       display: flex;
@@ -289,60 +253,27 @@
       padding: 6px 12px;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 800;
     }
 
-    .score-chip {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .score-num {
-      color: var(--accent-gold);
-      font-size: 1rem;
-    }
-
-    .stone-icon {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      display: inline-block;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    }
-
-    .stone-black {
-      background: radial-gradient(circle at 30% 30%, #475569, #020617);
-      border: 1px solid #64748b;
-    }
-
-    .stone-white {
-      background: radial-gradient(circle at 30% 30%, #ffffff, #cbd5e1);
-      border: 1px solid #94a3b8;
-    }
+    .score-chip { display: flex; align-items: center; gap: 6px; }
+    .score-num { color: var(--accent-gold); font-size: 0.96rem; }
+    .stone-icon { width: 17px; height: 17px; border-radius: 50%; display: inline-block; }
 
     .canvas-wrapper {
       position: relative;
       width: 100%;
-      max-width: 580px;
       aspect-ratio: 1 / 1;
-      background: var(--board-wood);
-      border: 6px solid var(--board-border);
-      border-radius: 14px;
+      border-radius: 16px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
       overflow: hidden;
+      border: 5px solid #334155;
     }
 
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
+    canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
 
-    /* 達成一條新五連線的浮動提示 */
-    .line-toast {
+    .toast-banner {
       position: absolute;
       top: 16px;
       left: 50%;
@@ -352,23 +283,19 @@
       color: var(--accent-gold);
       padding: 6px 18px;
       border-radius: 999px;
-      font-size: 0.9rem;
+      font-size: 0.86rem;
       font-weight: 800;
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.45);
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s ease;
+      white-space: nowrap;
     }
-
-    .line-toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    .toast-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     .win-toast {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.82);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(4px);
       display: flex;
       flex-direction: column;
@@ -380,23 +307,51 @@
       pointer-events: none;
       transition: opacity 0.25s ease;
     }
+    .win-toast.show { opacity: 1; pointer-events: auto; }
+    .win-toast h2 { margin: 0 0 8px; font-size: 1.75rem; color: var(--accent-gold); }
+    .win-toast p { margin: 0 0 18px; font-size: 0.95rem; color: #e2e8f0; }
 
-    .win-toast.show {
-      opacity: 1;
-      pointer-events: auto;
+    /* 右側遊戲規則面板 */
+    .rules-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
     }
 
-    .win-toast h2 {
-      margin: 0 0 8px;
-      font-size: 1.8rem;
+    .rules-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
       color: var(--accent-gold);
-      text-shadow: 0 0 16px rgba(251, 191, 36, 0.6);
     }
 
-    .win-toast p {
-      margin: 0 0 18px;
-      font-size: 0.95rem;
-      color: #e2e8f0;
+    .rule-item {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .rule-item h3 {
+      margin: 0 0 5px;
+      font-size: 0.82rem;
+      color: var(--accent-cyan);
+    }
+
+    .rule-item p, .rule-item ul {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.55;
+    }
+
+    .rule-item ul {
+      padding-left: 16px;
+    }
+
+    .rule-item li {
+      margin-bottom: 4px;
     }
   </style>
 </head>
@@ -406,8 +361,18 @@
     <!-- 左側設定與開房面板 -->
     <aside class="sidebar">
       <div class="brand">
-        <h1>多線五子棋對弈</h1>
-        <span class="rule-badge" id="ruleBadge">15×15 · 連 1 條線勝</span>
+        <h1>多款棋類對戰大廳</h1>
+        <span class="rule-badge" id="ruleBadge">五子棋</span>
+      </div>
+
+      <div class="control-group">
+        <label>選擇棋類遊戲</label>
+        <div class="game-grid" id="gameGrid">
+          <button type="button" class="game-btn active" data-game="gomoku">五子棋 (多線)</button>
+          <button type="button" class="game-btn" data-game="tictactoe">井字棋 (3×3)</button>
+          <button type="button" class="game-btn" data-game="othello">黑白棋 (翻轉)</button>
+          <button type="button" class="game-btn" data-game="watermelon">🍉 西瓜棋</button>
+        </div>
       </div>
 
       <div class="mode-tabs">
@@ -415,74 +380,66 @@
         <button type="button" class="mode-tab" id="tabOnline">遠端開房間</button>
       </div>
 
-      <!-- 自訂棋盤格數與目標五連線條數 -->
-      <div class="control-row">
+      <!-- 五子棋專屬規則設定 -->
+      <div class="control-row" id="gomokuOptions">
         <div class="control-group">
           <label for="boardSizeSelect">棋盤格數</label>
           <select id="boardSizeSelect">
-            <option value="9">9 × 9 (迷你)</option>
-            <option value="11">11 × 11 (小型)</option>
-            <option value="13">13 × 13 (中型)</option>
-            <option value="15" selected>15 × 15 (標準)</option>
-            <option value="17">17 × 17 (大型)</option>
-            <option value="19">19 × 19 (圍棋盤)</option>
+            <option value="9">9 × 9</option>
+            <option value="11">11 × 11</option>
+            <option value="13">13 × 13</option>
+            <option value="15" selected>15 × 15</option>
+            <option value="17">17 × 17</option>
+            <option value="19">19 × 19</option>
           </select>
         </div>
-
         <div class="control-group">
-          <label for="targetLinesSelect">獲勝條件 (5子連幾條)</label>
+          <label for="targetLinesSelect">獲勝五連線數</label>
           <select id="targetLinesSelect">
-            <option value="1" selected>連成 1 條五子線</option>
-            <option value="2">累積 2 條五子線</option>
-            <option value="3">累積 3 條五子線</option>
-            <option value="4">累積 4 條五子線</option>
-            <option value="5">累積 5 條五子線</option>
+            <option value="1" selected>連成 1 條勝</option>
+            <option value="2">累積 2 條勝</option>
+            <option value="3">累積 3 條勝</option>
+            <option value="4">累積 4 條勝</option>
+            <option value="5">累積 5 條勝</option>
           </select>
         </div>
       </div>
 
-      <!-- AI 模式設定 -->
-      <div class="ai-box" id="aiSettingsBox">
-        <div class="control-row">
-          <div class="control-group">
-            <label for="aiDifficulty">AI 難度</label>
-            <select id="aiDifficulty">
-              <option value="easy">入門 (輕鬆)</option>
-              <option value="medium" selected>進階 (攻防兼備)</option>
-              <option value="hard">大師 (深度算路)</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label for="playerColorSelect">執子順序</label>
-            <select id="playerColorSelect">
-              <option value="1" selected>黑子 (先手)</option>
-              <option value="2">白子 (後手)</option>
-            </select>
-          </div>
+      <div class="control-row" id="aiSettingsBox">
+        <div class="control-group">
+          <label for="aiDifficulty">AI 難度</label>
+          <select id="aiDifficulty">
+            <option value="easy">入門</option>
+            <option value="medium" selected>進階</option>
+            <option value="hard">大師</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="playerColorSelect">執子順序</label>
+          <select id="playerColorSelect">
+            <option value="1" selected>玩家 1 (先手)</option>
+            <option value="2">玩家 2 (後手)</option>
+          </select>
         </div>
       </div>
 
-      <!-- 遠端開房間連線區塊 -->
       <div class="online-box hidden" id="onlineSettingsBox">
         <div class="control-group">
-          <label>我的房間代碼（分享給朋友加入）</label>
+          <label>我的房間代碼（分享給朋友）</label>
           <div class="room-id-display">
-            <span id="myRoomId">尚未建立房間</span>
+            <span id="myRoomId">尚未建立</span>
             <button type="button" class="btn btn-warning btn-sm" id="copyLinkBtn" disabled>複製邀請網址</button>
           </div>
         </div>
-
-        <button type="button" class="btn btn-primary" id="createRoomBtn">建立新房間 (當房主/黑子)</button>
-
+        <button type="button" class="btn btn-primary" id="createRoomBtn">建立新房間 (當房主)</button>
         <div class="control-group">
-          <label for="joinRoomInput">或輸入朋友的房號加入對戰</label>
+          <label for="joinRoomInput">或輸入朋友房號加入</label>
           <div class="join-row">
-            <input type="text" id="joinRoomInput" placeholder="貼上房號..." />
+            <input type="text" id="joinRoomInput" placeholder="輸入房號..." />
             <button type="button" class="btn btn-success" id="joinRoomBtn">加入</button>
           </div>
         </div>
-
-        <div class="status-pill" id="networkStatus">狀態：請點擊「建立新房間」或輸入房號加入</div>
+        <div class="status-pill" id="networkStatus">狀態：點擊「建立新房間」或輸入房號加入</div>
       </div>
 
       <div class="control-row">
@@ -491,50 +448,61 @@
       </div>
     </aside>
 
-    <!-- 右側棋盤區域 -->
+    <!-- 中間棋盤區域 -->
     <main class="board-section">
       <div class="scoreboard-bar">
         <div class="player-indicator">
-          <span class="stone-icon stone-black" id="turnStoneIcon"></span>
+          <span class="stone-icon" id="turnStoneIcon"></span>
           <span id="turnText">輪到：黑子 (你)</span>
         </div>
 
-        <!-- 雙方五連線累積計數器 -->
         <div class="lines-counter">
           <div class="score-chip">
-            <span class="stone-icon stone-black" style="width:14px;height:14px;"></span>
-            <span>黑子：</span>
-            <span class="score-num" id="blackLinesText">0 / 1</span>
+            <span class="stone-icon" id="p1ScoreIcon" style="width:14px;height:14px;"></span>
+            <span id="p1Label">黑子：</span>
+            <span class="score-num" id="p1ScoreText">0 / 1</span>
           </div>
           <span style="color:rgba(255,255,255,0.2);">|</span>
           <div class="score-chip">
-            <span class="stone-icon stone-white" style="width:14px;height:14px;"></span>
-            <span>白子：</span>
-            <span class="score-num" id="whiteLinesText">0 / 1</span>
+            <span class="stone-icon" id="p2ScoreIcon" style="width:14px;height:14px;"></span>
+            <span id="p2Label">白子：</span>
+            <span class="score-num" id="p2ScoreText">0 / 1</span>
           </div>
         </div>
       </div>
 
       <div class="canvas-wrapper">
         <canvas id="boardCanvas" width="600" height="600"></canvas>
-        <div class="line-toast" id="lineToast">達成五子連線！+1 條</div>
+        <div class="toast-banner" id="toastBanner">提示訊息</div>
         <div class="win-toast" id="winToast">
           <h2 id="winTitle">黑子獲勝！</h2>
-          <p id="winSubtitle">率先達成 1 條五子連線</p>
+          <p id="winSubtitle">對局結束</p>
           <button type="button" class="btn btn-primary" id="modalRestartBtn">再來一局</button>
         </div>
       </div>
     </main>
+
+    <!-- 右側空白處：動態遊戲規則說明面板 -->
+    <aside class="rules-panel" id="rulesPanel">
+      <div class="rules-header">
+        <span>📖</span>
+        <h2 id="rulePanelTitle">五子棋 · 遊戲規則</h2>
+      </div>
+      <div id="rulePanelContent"></div>
+    </aside>
   </div>
 
   <script>
     const canvas = document.getElementById('boardCanvas');
     const ctx = canvas.getContext('2d');
 
+    const gameBtns = document.querySelectorAll('.game-btn');
     const tabAI = document.getElementById('tabAI');
     const tabOnline = document.getElementById('tabOnline');
+    const gomokuOptions = document.getElementById('gomokuOptions');
     const aiSettingsBox = document.getElementById('aiSettingsBox');
     const onlineSettingsBox = document.getElementById('onlineSettingsBox');
+
     const boardSizeSelect = document.getElementById('boardSizeSelect');
     const targetLinesSelect = document.getElementById('targetLinesSelect');
     const aiDifficultySelect = document.getElementById('aiDifficulty');
@@ -550,702 +518,1020 @@
 
     const turnStoneIcon = document.getElementById('turnStoneIcon');
     const turnText = document.getElementById('turnText');
-    const blackLinesText = document.getElementById('blackLinesText');
-    const whiteLinesText = document.getElementById('whiteLinesText');
-    const lineToast = document.getElementById('lineToast');
+    const p1ScoreIcon = document.getElementById('p1ScoreIcon');
+    const p2ScoreIcon = document.getElementById('p2ScoreIcon');
+    const p1Label = document.getElementById('p1Label');
+    const p2Label = document.getElementById('p2Label');
+    const p1ScoreText = document.getElementById('p1ScoreText');
+    const p2ScoreText = document.getElementById('p2ScoreText');
+    const toastBanner = document.getElementById('toastBanner');
 
-    const undoBtn = document.getElementById('undoBtn');
-    const restartBtn = document.getElementById('restartBtn');
     const winToast = document.getElementById('winToast');
     const winTitle = document.getElementById('winTitle');
     const winSubtitle = document.getElementById('winSubtitle');
-    const modalRestartBtn = document.getElementById('modalRestartBtn');
+    const rulePanelTitle = document.getElementById('rulePanelTitle');
+    const rulePanelContent = document.getElementById('rulePanelContent');
 
-    // 核心遊戲狀態
-    const FIVE_IN_A_ROW = 5; // 固定 5 顆子算一條線
+    // 四款棋類的右側規則說明內容
+    const GAME_RULES_HTML = {
+      gomoku: `
+        <div class="rule-item">
+          <h3>🎯 勝利目標</h3>
+          <p>在橫、直或斜向將 <strong>5 顆同色棋子</strong>連成一線即算 1 條線；率先累積達到左側設定的「目標連線數（1～5 條）」即獲得最終勝利。</p>
+        </div>
+        <div class="rule-item">
+          <h3>🕹️ 操作與規則</h3>
+          <ul>
+            <li>黑子先手、白子後手，輪流點擊交叉點落子。</li>
+            <li>達成一條五連珠時會亮起色線並計分，對局會繼續進行直到某一方湊齊指定條數。</li>
+            <li>同一方向超過 5 顆不會重複計分，需另闢新線。</li>
+          </ul>
+        </div>
+      `,
+      tictactoe: `
+        <div class="rule-item">
+          <h3>🎯 勝利目標</h3>
+          <p>在 <strong>3 × 3</strong> 九宮格內，率先將自己的符號（<strong>X</strong> 或 <strong>O</strong>）在橫、直或對角線連成 <strong>3 格一線</strong>即獲勝。</p>
+        </div>
+        <div class="rule-item">
+          <h3>🕹️ 操作與技巧</h3>
+          <ul>
+            <li>叉叉 (X) 先手，點擊任意空格即可放置。</li>
+            <li>搶佔正中央格與四個角落可創造最多雙向連線機會。</li>
+            <li>若 9 格全滿仍無人連線則判定平局。</li>
+          </ul>
+        </div>
+      `,
+      othello: `
+        <div class="rule-item">
+          <h3>🎯 勝利目標</h3>
+          <p>在 <strong>8 × 8</strong> 棋盤上落子夾擊對手，當棋盤下滿或雙方皆無步可走時，場上<strong>棋子數量較多</strong>的一方獲勝。</p>
+        </div>
+        <div class="rule-item">
+          <h3>🕹️ 夾擊翻轉規則</h3>
+          <ul>
+            <li>落子位置必須與自己已有的另一顆棋子，在橫、直或斜線上<strong>夾住對方的連續棋子</strong>（畫面上會以小白點提示可落子處）。</li>
+            <li>被夾住的對手棋子會全部翻轉成你的顏色。</li>
+            <li>若某一方完全沒有合法落子點，必須跳過回合由對手繼續下。</li>
+          </ul>
+        </div>
+      `,
+      watermelon: `
+        <div class="rule-item">
+          <h3>🎯 勝利目標</h3>
+          <p>台灣經典童玩！雙方各有 <strong>6 顆棋子</strong>（紅瓜子 vs 綠瓜子），將對手的棋子包圍吃掉，使對手剩餘棋子<strong>少於 3 顆</strong>（或無路可走）即獲勝！</p>
+        </div>
+        <div class="rule-item">
+          <h3>🕹️ 移動與圍吃規則</h3>
+          <ul>
+            <li><strong>選子移動：</strong>先點擊自己的棋子（亮起金圈），再點擊綠色提示的相鄰空節點，每次沿線移動 1 步。</li>
+            <li><strong>包圍吃子：</strong>移動後若將對手的單顆或多顆相連棋子周圍的所有相連空位（氣）全部堵死，被圍住的棋子就會立刻被吃掉！</li>
+            <li>注意：不可主動走入自己會立刻沒氣的自殺位置（除非該步能同時吃掉對手）。</li>
+          </ul>
+        </div>
+      `
+    };
+
+    // ================= 西瓜棋 21 節點拓撲圖定義 (歸一化座標 0~1) =================
+    // 0: 中心天元
+    // 1..4: 內圈十字 (上, 右, 下, 左)
+    // 5..8: 中圈四角 (右上, 右下, 左下, 左上)
+    // 9..12: 外圈四極 (正上, 正右, 正下, 正左)
+    // 13..20: 四個半圓瓜瓣弧線中點 (每瓣各2點)
+    const WM_NODES = [
+      { x: 0.50, y: 0.50 }, // 0: 中心
+      { x: 0.50, y: 0.34 }, // 1: 內上
+      { x: 0.66, y: 0.50 }, // 2: 內右
+      { x: 0.50, y: 0.66 }, // 3: 內下
+      { x: 0.34, y: 0.50 }, // 4: 內左
+      { x: 0.63, y: 0.37 }, // 5: 內右上
+      { x: 0.63, y: 0.63 }, // 6: 內右下
+      { x: 0.37, y: 0.63 }, // 7: 內左下
+      { x: 0.37, y: 0.37 }, // 8: 內左上
+      { x: 0.50, y: 0.12 }, // 9: 外正上
+      { x: 0.88, y: 0.50 }, // 10: 外正右
+      { x: 0.50, y: 0.88 }, // 11: 外正下
+      { x: 0.12, y: 0.50 }, // 12: 外正左
+      { x: 0.36, y: 0.16 }, // 13: 上瓜瓣左
+      { x: 0.64, y: 0.16 }, // 14: 上瓜瓣右
+      { x: 0.84, y: 0.36 }, // 15: 右瓜瓣上
+      { x: 0.84, y: 0.64 }, // 16: 右瓜瓣下
+      { x: 0.64, y: 0.84 }, // 17: 下瓜瓣右
+      { x: 0.36, y: 0.84 }, // 18: 下瓜瓣左
+      { x: 0.16, y: 0.64 }, // 19: 左瓜瓣下
+      { x: 0.16, y: 0.36 }  // 20: 左瓜瓣上
+    ];
+
+    const WM_EDGES = [
+      // 十字主幹
+      [0,1],[0,2],[0,3],[0,4],
+      // 內圈八邊圓環
+      [1,5],[5,2],[2,6],[6,3],[3,7],[7,4],[4,8],[8,1],
+      // 上瓜瓣弧線與頂點連接
+      [1,9],[9,13],[9,14],[8,13],[5,14],[13,20],[14,15],
+      // 右瓜瓣弧線
+      [2,10],[10,15],[10,16],[5,15],[6,16],[16,17],
+      // 下瓜瓣弧線
+      [3,11],[11,17],[11,18],[6,17],[7,18],[18,19],
+      // 左瓜瓣弧線
+      [4,12],[12,19],[12,20],[7,19],[8,20]
+    ];
+
+    // 建立西瓜棋鄰接表
+    const WM_ADJ = Array.from({ length: WM_NODES.length }, () => []);
+    WM_EDGES.forEach(([a, b]) => {
+      if (!WM_ADJ[a].includes(b)) WM_ADJ[a].push(b);
+      if (!WM_ADJ[b].includes(a)) WM_ADJ[b].push(a);
+    });
+
+    // 遊戲全域狀態
+    let currentGame = 'gomoku';
     let gameMode = 'ai';
-    let boardSize = 15;
-    let targetLines = 1; // 玩家自訂要連成 1~5 條線才算贏
+    let rows = 15, cols = 15;
+    let targetLines = 1;
     let board = [];
-    let moveHistory = [];
+    let wmPieces = []; // 西瓜棋 21 節點狀態 (0:空, 1:紅瓜子, 2:綠瓜子)
+    let wmSelectedNode = null; // 西瓜棋目前選取的棋子節點索引
+    let history = [];
     let currentTurn = 1;
     let myColor = 1;
     let gameOver = false;
-    let hoverPos = null;
-    let lineToastTimer = null;
-
-    // 紀錄所有已形成的五連線（避免重複計算，並在棋盤上持續畫出）
-    // 結構：{ id: string, color: 1|2, start: {r,c}, end: {r,c} }
+    let hoverCell = null;
+    let hoverNode = null;
     let completedLines = [];
+    let winLineCoords = [];
+    let toastTimer = null;
 
-    let peer = null;
-    let conn = null;
-    let isRoomHost = false;
+    let peer = null, conn = null, isRoomHost = false;
 
-    function initBoardState() {
-      boardSize = Number(boardSizeSelect.value);
-      targetLines = Number(targetLinesSelect.value);
-      ruleBadge.textContent = `${boardSize}×${boardSize} · 連 ${targetLines} 條線勝`;
+    const GAME_META = {
+      gomoku:     { title: '五子棋', p1: '黑子', p2: '白子', c1: '#0f172a', c2: '#f8fafc' },
+      tictactoe:  { title: '井字棋', p1: '叉叉 (X)', p2: '圈圈 (O)', c1: '#38bdf8', c2: '#f43f5e' },
+      othello:    { title: '黑白棋', p1: '黑棋', p2: '白棋', c1: '#0f172a', c2: '#f8fafc' },
+      watermelon: { title: '西瓜棋', p1: '紅瓜子', p2: '綠瓜子', c1: '#ef4444', c2: '#22c55e' }
+    };
 
-      board = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
-      moveHistory = [];
+    function showToast(msg) {
+      clearTimeout(toastTimer);
+      toastBanner.textContent = msg;
+      toastBanner.classList.add('show');
+      toastTimer = setTimeout(() => toastBanner.classList.remove('show'), 1900);
+    }
+
+    function initGame() {
+      gomokuOptions.classList.toggle('hidden', currentGame !== 'gomoku');
+      const meta = GAME_META[currentGame];
+
+      // 更新右側規則說明面板
+      rulePanelTitle.textContent = `${meta.title} · 遊戲規則`;
+      rulePanelContent.innerHTML = GAME_RULES_HTML[currentGame];
+
+      if (currentGame === 'gomoku') {
+        rows = cols = Number(boardSizeSelect.value);
+        targetLines = Number(targetLinesSelect.value);
+        ruleBadge.textContent = `${rows}×${cols} · 連 ${targetLines} 條勝`;
+      } else if (currentGame === 'tictactoe') {
+        rows = cols = 3;
+        ruleBadge.textContent = '3×3 · 三子連線';
+      } else if (currentGame === 'othello') {
+        rows = cols = 8;
+        ruleBadge.textContent = '8×8 · 夾擊翻轉';
+      } else if (currentGame === 'watermelon') {
+        ruleBadge.textContent = '21節點 · 圍吃對弈';
+      }
+
+      board = Array.from({ length: rows }, () => Array(cols).fill(0));
+      history = [];
       completedLines = [];
+      winLineCoords = [];
+      wmSelectedNode = null;
       currentTurn = 1;
       gameOver = false;
       winToast.classList.remove('show');
-      lineToast.classList.remove('show');
+
+      if (currentGame === 'othello') {
+        board[3][3] = 2; board[3][4] = 1;
+        board[4][3] = 1; board[4][4] = 2;
+      } else if (currentGame === 'watermelon') {
+        // 初始擺子：上方 6 顆紅瓜子(1)，下方 6 顆綠瓜子(2)
+        wmPieces = Array(WM_NODES.length).fill(0);
+        [9, 13, 14, 1, 8, 5].forEach(idx => wmPieces[idx] = 1);
+        [11, 17, 18, 3, 6, 7].forEach(idx => wmPieces[idx] = 2);
+      }
+
+      p1ScoreIcon.style.background = meta.c1;
+      p2ScoreIcon.style.background = meta.c2;
+      p1Label.textContent = `${meta.p1}：`;
+      p2Label.textContent = `${meta.p2}：`;
 
       if (gameMode === 'ai') {
         myColor = Number(playerColorSelect.value);
-        updateScoreAndTurnUI();
-        drawBoard();
-        if (myColor === 2) {
-          setTimeout(makeAIMove, 350);
-        }
-      } else {
-        updateScoreAndTurnUI();
-        drawBoard();
+      }
+
+      updateHUD();
+      draw();
+
+      if (gameMode === 'ai' && myColor === 2) {
+        setTimeout(makeAIMove, 400);
       }
     }
 
-    function getLineCount(color) {
-      return completedLines.filter(line => line.color === color).length;
-    }
-
-    function updateScoreAndTurnUI() {
-      const blackCount = getLineCount(1);
-      const whiteCount = getLineCount(2);
-      blackLinesText.textContent = `${blackCount} / ${targetLines}`;
-      whiteLinesText.textContent = `${whiteCount} / ${targetLines}`;
-
-      turnStoneIcon.className = `stone-icon ${currentTurn === 1 ? 'stone-black' : 'stone-white'}`;
-      const colorName = currentTurn === 1 ? '黑子' : '白子';
+    function updateHUD() {
+      const meta = GAME_META[currentGame];
+      turnStoneIcon.style.background = currentTurn === 1 ? meta.c1 : meta.c2;
+      const pName = currentTurn === 1 ? meta.p1 : meta.p2;
 
       if (gameMode === 'ai') {
-        const who = currentTurn === myColor ? '你' : 'AI 電腦';
-        turnText.textContent = `輪到：${colorName} (${who})`;
+        turnText.textContent = `輪到：${pName} (${currentTurn === myColor ? '你' : 'AI'})`;
       } else {
-        if (!conn || !conn.open) {
-          turnText.textContent = '等待對手連線中...';
-        } else {
-          const who = currentTurn === myColor ? '你的回合' : '對手思考中';
-          turnText.textContent = `輪到：${colorName} (${who})`;
-        }
+        turnText.textContent = (!conn || !conn.open)
+          ? '等待對手連線...'
+          : `輪到：${pName} (${currentTurn === myColor ? '你的回合' : '對手思考中'})`;
+      }
+
+      if (currentGame === 'gomoku') {
+        p1ScoreText.textContent = `${completedLines.filter(l => l.color === 1).length} / ${targetLines}`;
+        p2ScoreText.textContent = `${completedLines.filter(l => l.color === 2).length} / ${targetLines}`;
+      } else if (currentGame === 'othello') {
+        let c1 = 0, c2 = 0;
+        board.forEach(r => r.forEach(v => { if (v === 1) c1++; if (v === 2) c2++; }));
+        p1ScoreText.textContent = `${c1} 子`;
+        p2ScoreText.textContent = `${c2} 子`;
+      } else if (currentGame === 'watermelon') {
+        const c1 = wmPieces.filter(v => v === 1).length;
+        const c2 = wmPieces.filter(v => v === 2).length;
+        p1ScoreText.textContent = `剩 ${c1} 顆`;
+        p2ScoreText.textContent = `剩 ${c2} 顆`;
+      } else {
+        p1ScoreText.textContent = '3連線';
+        p2ScoreText.textContent = '3連線';
       }
     }
 
-    function showNewLineToast(color, count) {
-      clearTimeout(lineToastTimer);
-      const name = color === 1 ? '黑子' : '白子';
-      lineToast.textContent = `${name}達成五子連線！目前累積 ${count} / ${targetLines} 條`;
-      lineToast.classList.add('show');
-      lineToastTimer = setTimeout(() => {
-        lineToast.classList.remove('show');
-      }, 1800);
-    }
-
-    // 掃描棋盤上所有獨立的 5 子連線（支援重疊與多方向，且不重複計算同一組 5 顆子）
-    function recalculateAllFiveLines() {
-      const dirs = [
-        [0, 1],  // 水平
-        [1, 0],  // 垂直
-        [1, 1],  // 右下斜
-        [1, -1]  // 左下斜
-      ];
-      const foundLines = [];
-      const seenIds = new Set();
-
-      for (let r = 0; r < boardSize; r++) {
-        for (let c = 0; c < boardSize; c++) {
-          const color = board[r][c];
-          if (color === 0) continue;
-
-          for (const [dr, dc] of dirs) {
-            const endR = r + dr * (FIVE_IN_A_ROW - 1);
-            const endC = c + dc * (FIVE_IN_A_ROW - 1);
-            if (endR < 0 || endR >= boardSize || endC < 0 || endC >= boardSize) continue;
-
-            // 檢查連續 5 格是否為同色
-            let match = true;
-            const cells = [];
-            for (let step = 0; step < FIVE_IN_A_ROW; step++) {
-              const nr = r + dr * step;
-              const nc = c + dc * step;
-              if (board[nr][nc] !== color) {
-                match = false;
-                break;
-              }
-              cells.push(`${nr},${nc}`);
-            }
-
-            if (match) {
-              // 若同一方向連成 6 顆以上，只取前 5 顆為一條獨立五連珠，避免移動一格就多算一條
-              const prevR = r - dr;
-              const prevC = c - dc;
-              const isExtendedFromPrev =
-                prevR >= 0 && prevR < boardSize &&
-                prevC >= 0 && prevC < boardSize &&
-                board[prevR][prevC] === color;
-
-              if (!isExtendedFromPrev) {
-                const lineId = `${color}:${cells.join('|')}`;
-                if (!seenIds.has(lineId)) {
-                  seenIds.add(lineId);
-                  foundLines.push({
-                    id: lineId,
-                    color,
-                    start: { r, c },
-                    end: { r: endR, c: endC }
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
-      return foundLines;
-    }
-
-    function drawBoard() {
+    // ================= 繪圖引擎 =================
+    function draw() {
       const W = canvas.width;
-      const padding = W * 0.065;
-      const cellSize = (W - padding * 2) / (boardSize - 1);
-
       ctx.clearRect(0, 0, W, W);
 
-      const grad = ctx.createLinearGradient(0, 0, W, W);
-      grad.addColorStop(0, '#e6c288');
-      grad.addColorStop(1, '#cfa363');
+      if (currentGame === 'gomoku') drawGomoku(W);
+      else if (currentGame === 'tictactoe') drawTicTacToe(W);
+      else if (currentGame === 'othello') drawOthello(W);
+      else if (currentGame === 'watermelon') drawWatermelon(W);
+    }
+
+    function drawWatermelon(W) {
+      // 淺木色西瓜棋盤底色
+      const grad = ctx.createRadialGradient(W/2, W/2, 40, W/2, W/2, W*0.6);
+      grad.addColorStop(0, '#fef3c7');
+      grad.addColorStop(1, '#d97706');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, W);
 
-      // 網格線
-      ctx.strokeStyle = '#4a3219';
-      ctx.lineWidth = boardSize > 15 ? 1.3 : 1.8;
-      for (let i = 0; i < boardSize; i++) {
-        const pos = padding + i * cellSize;
-        ctx.beginPath();
-        ctx.moveTo(padding, pos);
-        ctx.lineTo(W - padding, pos);
-        ctx.stroke();
+      // 繪製外大圓與內小圓裝飾外框
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(W * 0.5, W * 0.5, W * 0.38, 0, Math.PI * 2);
+      ctx.stroke();
 
-        ctx.beginPath();
-        ctx.moveTo(pos, padding);
-        ctx.lineTo(pos, W - padding);
-        ctx.stroke();
-      }
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(W * 0.5, W * 0.5, W * 0.16, 0, Math.PI * 2);
+      ctx.stroke();
 
-      // 星位點
-      const stars = getStarPoints(boardSize);
-      ctx.fillStyle = '#3b2510';
-      stars.forEach(([r, c]) => {
+      // 繪製所有 21 節點連線軌道
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 3.2;
+      WM_EDGES.forEach(([a, b]) => {
         ctx.beginPath();
-        ctx.arc(padding + c * cellSize, padding + r * cellSize, 4.2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(WM_NODES[a].x * W, WM_NODES[a].y * W);
+        ctx.lineTo(WM_NODES[b].x * W, WM_NODES[b].y * W);
+        ctx.stroke();
       });
 
-      // 滑鼠懸停預覽
-      if (!gameOver && hoverPos && board[hoverPos.r][hoverPos.c] === 0) {
-        const canMove = (gameMode === 'ai' && currentTurn === myColor) ||
-                        (gameMode === 'online' && conn && conn.open && currentTurn === myColor);
-        if (canMove) {
-          const hx = padding + hoverPos.c * cellSize;
-          const hy = padding + hoverPos.r * cellSize;
-          ctx.save();
-          ctx.globalAlpha = 0.45;
-          ctx.fillStyle = myColor === 1 ? '#0f172a' : '#ffffff';
-          ctx.beginPath();
-          ctx.arc(hx, hy, cellSize * 0.42, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
+      // 計算目前選取棋子的合法移動目標點
+      const validTargets = (wmSelectedNode !== null && !gameOver && canLocalPlay())
+        ? getWatermelonValidMoves(wmSelectedNode, currentTurn)
+        : [];
 
-      // 繪製所有棋子
-      const lastMove = moveHistory[moveHistory.length - 1];
-      for (let r = 0; r < boardSize; r++) {
-        for (let c = 0; c < boardSize; c++) {
-          const stone = board[r][c];
-          if (stone === 0) continue;
-
-          const cx = padding + c * cellSize;
-          const cy = padding + r * cellSize;
-          const rad = cellSize * 0.43;
-
-          ctx.save();
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-          ctx.shadowBlur = 5;
-          ctx.shadowOffsetX = 2;
-          ctx.shadowOffsetY = 2;
-
-          const sGrad = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.3, rad * 0.1, cx, cy, rad);
-          if (stone === 1) {
-            sGrad.addColorStop(0, '#475569');
-            sGrad.addColorStop(1, '#020617');
-          } else {
-            sGrad.addColorStop(0, '#ffffff');
-            sGrad.addColorStop(1, '#cbd5e1');
-          }
-          ctx.fillStyle = sGrad;
-          ctx.beginPath();
-          ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-
-          if (lastMove && lastMove.r === r && lastMove.c === c) {
-            ctx.fillStyle = '#f43f5e';
-            ctx.beginPath();
-            ctx.arc(cx, cy, rad * 0.22, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-
-      // 繪製所有已達成的五子連線軌跡（黑子用紅光線、白子用藍光線區分）
-      completedLines.forEach(line => {
-        ctx.save();
-        ctx.strokeStyle = line.color === 1 ? '#f43f5e' : '#0284c7';
-        ctx.lineWidth = 4.5;
-        ctx.lineCap = 'round';
-        ctx.shadowColor = line.color === 1 ? '#f43f5e' : '#38bdf8';
-        ctx.shadowBlur = 10;
+      // 繪製 21 個交叉節點
+      WM_NODES.forEach((pt, idx) => {
+        const cx = pt.x * W, cy = pt.y * W;
+        ctx.fillStyle = '#78350f';
         ctx.beginPath();
-        ctx.moveTo(padding + line.start.c * cellSize, padding + line.start.r * cellSize);
-        ctx.lineTo(padding + line.end.c * cellSize, padding + line.end.r * cellSize);
-        ctx.stroke();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 若為可移動的空位，畫出綠色呼吸光圈提示
+        if (validTargets.includes(idx)) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.35)';
+          ctx.strokeStyle = '#16a34a';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+      });
+
+      // 繪製紅、綠雙方瓜子棋子
+      wmPieces.forEach((owner, idx) => {
+        if (owner === 0) return;
+        const cx = WM_NODES[idx].x * W, cy = WM_NODES[idx].y * W;
+        const rad = 20;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 3;
+
+        const pGrad = ctx.createRadialGradient(cx - 6, cy - 6, 3, cx, cy, rad);
+        if (owner === 1) {
+          pGrad.addColorStop(0, '#fca5a5');
+          pGrad.addColorStop(0.4, '#ef4444');
+          pGrad.addColorStop(1, '#991b1b');
+        } else {
+          pGrad.addColorStop(0, '#86efac');
+          pGrad.addColorStop(0.4, '#22c55e');
+          pGrad.addColorStop(1, '#166534');
+        }
+        ctx.fillStyle = pGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 選取高亮外框
+        if (wmSelectedNode === idx) {
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rad + 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         ctx.restore();
       });
     }
 
-    function getStarPoints(size) {
-      const mid = Math.floor(size / 2);
-      if (size < 11) return [[mid, mid]];
-      const edge = size >= 15 ? 3 : 2;
-      return [
-        [edge, edge],
-        [edge, size - 1 - edge],
-        [mid, mid],
-        [size - 1 - edge, edge],
-        [size - 1 - edge, size - 1 - edge]
-      ];
-    }
+    function drawGomoku(W) {
+      const pad = W * 0.065;
+      const cell = (W - pad * 2) / (rows - 1);
+      ctx.fillStyle = '#deb887';
+      ctx.fillRect(0, 0, W, W);
 
-    function getGridPosFromEvent(e) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const x = (clientX - rect.left) * scaleX;
-      const y = (clientY - rect.top) * scaleY;
-
-      const padding = canvas.width * 0.065;
-      const cellSize = (canvas.width - padding * 2) / (boardSize - 1);
-      const c = Math.round((x - padding) / cellSize);
-      const r = Math.round((y - padding) / cellSize);
-
-      if (r >= 0 && r < boardSize && c >= 0 && c < boardSize) {
-        return { r, c };
+      ctx.strokeStyle = '#4a3219';
+      ctx.lineWidth = rows > 15 ? 1.3 : 1.8;
+      for (let i = 0; i < rows; i++) {
+        const p = pad + i * cell;
+        ctx.beginPath(); ctx.moveTo(pad, p); ctx.lineTo(W - pad, p); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(p, pad); ctx.lineTo(p, W - pad); ctx.stroke();
       }
-      return null;
+
+      if (!gameOver && hoverCell && board[hoverCell.r][hoverCell.c] === 0 && canLocalPlay()) {
+        ctx.save(); ctx.globalAlpha = 0.4;
+        ctx.fillStyle = myColor === 1 ? '#0f172a' : '#fff';
+        ctx.beginPath();
+        ctx.arc(pad + hoverCell.c * cell, pad + hoverCell.r * cell, cell * 0.42, 0, Math.PI * 2);
+        ctx.fill(); ctx.restore();
+      }
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (!board[r][c]) continue;
+          const cx = pad + c * cell, cy = pad + r * cell, rad = cell * 0.43;
+          ctx.fillStyle = board[r][c] === 1 ? '#0f172a' : '#f8fafc';
+          ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.stroke();
+        }
+      }
+
+      completedLines.forEach(line => {
+        ctx.save();
+        ctx.strokeStyle = line.color === 1 ? '#f43f5e' : '#0284c7';
+        ctx.lineWidth = 4.5; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(pad + line.start.c * cell, pad + line.start.r * cell);
+        ctx.lineTo(pad + line.end.c * cell, pad + line.end.r * cell);
+        ctx.stroke(); ctx.restore();
+      });
     }
 
-    function placeStone(r, c, color, isRemote = false) {
-      if (gameOver || board[r][c] !== 0) return false;
+    function drawTicTacToe(W) {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, W, W);
+      const cell = W / 3;
 
-      const prevCount = getLineCount(color);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 6;
+      for (let i = 1; i < 3; i++) {
+        ctx.beginPath(); ctx.moveTo(cell * i, 30); ctx.lineTo(cell * i, W - 30); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(30, cell * i); ctx.lineTo(W - 30, cell * i); ctx.stroke();
+      }
 
-      board[r][c] = color;
-      moveHistory.push({ r, c, color });
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const val = board[r][c];
+          const cx = c * cell + cell / 2, cy = r * cell + cell / 2, rad = cell * 0.3;
+          if (val === 1) {
+            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 14; ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(cx - rad, cy - rad); ctx.lineTo(cx + rad, cy + rad);
+            ctx.moveTo(cx + rad, cy - rad); ctx.lineTo(cx - rad, cy + rad);
+            ctx.stroke();
+          } else if (val === 2) {
+            ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 14;
+            ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+          }
+        }
+      }
+
+      if (winLineCoords.length >= 3) {
+        const s = winLineCoords[0], e = winLineCoords[winLineCoords.length - 1];
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 10; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(s.c * cell + cell / 2, s.r * cell + cell / 2);
+        ctx.lineTo(e.c * cell + cell / 2, e.r * cell + cell / 2);
+        ctx.stroke();
+      }
+    }
+
+    function drawOthello(W) {
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(0, 0, W, W);
+      const cell = W / 8;
+
+      ctx.strokeStyle = '#052e16';
+      ctx.lineWidth = 2;
+      for (let i = 0; i <= 8; i++) {
+        ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, W); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(W, i * cell); ctx.stroke();
+      }
+
+      const validMoves = (!gameOver && canLocalPlay()) ? getOthelloValidMoves(currentTurn) : [];
+      validMoves.forEach(m => {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.beginPath();
+        ctx.arc(m.c * cell + cell / 2, m.r * cell + cell / 2, 8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (!board[r][c]) continue;
+          ctx.fillStyle = board[r][c] === 1 ? '#0f172a' : '#f8fafc';
+          ctx.beginPath();
+          ctx.arc(c * cell + cell / 2, r * cell + cell / 2, cell * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // ================= 西瓜棋圍吃演算法 =================
+    function getGroupAndLiberties(piecesArr, startIdx) {
+      const color = piecesArr[startIdx];
+      const visited = new Set([startIdx]);
+      const liberties = new Set();
+      const queue = [startIdx];
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        for (const nb of WM_ADJ[curr]) {
+          if (piecesArr[nb] === 0) {
+            liberties.add(nb);
+          } else if (piecesArr[nb] === color && !visited.has(nb)) {
+            visited.add(nb);
+            queue.push(nb);
+          }
+        }
+      }
+      return { group: Array.from(visited), liberties: liberties.size };
+    }
+
+    function simulateWatermelonMove(piecesArr, fromIdx, toIdx, color) {
+      const next = [...piecesArr];
+      next[toIdx] = color;
+      next[fromIdx] = 0;
+      const opp = color === 1 ? 2 : 1;
+      let capturedCount = 0;
+
+      // 檢查所有相鄰或全場對手棋群是否已無氣（被包圍）
+      for (let i = 0; i < next.length; i++) {
+        if (next[i] === opp) {
+          const { group, liberties } = getGroupAndLiberties(next, i);
+          if (liberties === 0) {
+            group.forEach(idx => { next[idx] = 0; capturedCount++; });
+          }
+        }
+      }
+
+      // 檢查自己移動後是否陷入無氣狀態（不可自殺）
+      const selfStatus = getGroupAndLiberties(next, toIdx);
+      if (selfStatus.liberties === 0 && capturedCount === 0) {
+        return null; // 非法自殺步
+      }
+      return { nextPieces: next, capturedCount };
+    }
+
+    function getWatermelonValidMoves(fromIdx, color) {
+      if (wmPieces[fromIdx] !== color) return [];
+      return WM_ADJ[fromIdx].filter(toIdx => {
+        if (wmPieces[toIdx] !== 0) return false;
+        return simulateWatermelonMove(wmPieces, fromIdx, toIdx, color) !== null;
+      });
+    }
+
+    function hasAnyWatermelonMove(color) {
+      for (let i = 0; i < wmPieces.length; i++) {
+        if (wmPieces[i] === color && getWatermelonValidMoves(i, color).length > 0) return true;
+      }
+      return false;
+    }
+
+    function executeWatermelonMove(fromIdx, toIdx, color, isRemote = false) {
+      const sim = simulateWatermelonMove(wmPieces, fromIdx, toIdx, color);
+      if (!sim) return false;
+
+      history.push([...wmPieces]);
+      wmPieces = sim.nextPieces;
+      wmSelectedNode = null;
+
+      if (gameMode === 'online' && !isRemote && conn && conn.open) {
+        conn.send({ type: 'WM_MOVE', from: fromIdx, to: toIdx, color });
+      }
+
+      if (sim.capturedCount > 0) {
+        showToast(`圍吃成功！吃掉對方 ${sim.capturedCount} 顆西瓜子`);
+      }
+
+      const opp = color === 1 ? 2 : 1;
+      const oppRemain = wmPieces.filter(v => v === opp).length;
+      const winnerName = color === 1 ? GAME_META.watermelon.p1 : GAME_META.watermelon.p2;
+
+      if (oppRemain < 3 || !hasAnyWatermelonMove(opp)) {
+        gameOver = true;
+        updateHUD();
+        draw();
+        winTitle.textContent = `${winnerName} 獲勝！`;
+        winSubtitle.textContent = oppRemain < 3
+          ? `對手僅剩 ${oppRemain} 顆棋子，無法再形成包圍`
+          : '對手已無路可走！';
+        winToast.classList.add('show');
+        return true;
+      }
+
+      currentTurn = opp;
+      updateHUD();
+      draw();
+
+      if (gameMode === 'ai' && !gameOver && currentTurn !== myColor) {
+        setTimeout(makeAIMove, 420);
+      }
+      return true;
+    }
+
+    // ================= 通用落子邏輯（五子棋/井字棋/黑白棋） =================
+    function canLocalPlay() {
+      if (gameMode === 'ai') return currentTurn === myColor;
+      return conn && conn.open && currentTurn === myColor;
+    }
+
+    function handleGridMove(r, c, color, isRemote = false) {
+      if (gameOver) return false;
+
+      if (currentGame === 'othello') {
+        const flips = getOthelloFlips(r, c, color);
+        if (board[r][c] !== 0 || flips.length === 0) return false;
+        history.push(board.map(row => [...row]));
+        board[r][c] = color;
+        flips.forEach(([fr, fc]) => board[fr][fc] = color);
+      } else {
+        if (board[r][c] !== 0) return false;
+        history.push(board.map(row => [...row]));
+        board[r][c] = color;
+      }
 
       if (gameMode === 'online' && !isRemote && conn && conn.open) {
         conn.send({ type: 'MOVE', r, c, color });
       }
 
-      // 重新計算場上所有五子連線
-      completedLines = recalculateAllFiveLines();
-      const newCount = getLineCount(color);
-
-      // 若本次落子新增了至少 1 條五子連線
-      if (newCount > prevCount) {
-        if (newCount >= targetLines) {
-          gameOver = true;
-          updateScoreAndTurnUI();
-          drawBoard();
-          const winnerName = color === 1 ? '黑子' : '白子';
-          winTitle.textContent = `${winnerName} 獲勝！`;
-          winSubtitle.textContent = `率先累積達成 ${newCount} 條五子連線`;
-          winToast.classList.add('show');
-          return true;
-        } else {
-          showNewLineToast(color, newCount);
-        }
-      }
-
-      // 棋盤下滿時的結算（比較雙方累積條數）
-      if (moveHistory.length === boardSize * boardSize) {
-        gameOver = true;
-        updateScoreAndTurnUI();
-        drawBoard();
-        const bLines = getLineCount(1);
-        const wLines = getLineCount(2);
-        if (bLines > wLines) {
-          winTitle.textContent = '黑子獲勝！';
-          winSubtitle.textContent = `棋盤已滿，黑子以 ${bLines} 條對 ${wLines} 條勝出`;
-        } else if (wLines > bLines) {
-          winTitle.textContent = '白子獲勝！';
-          winSubtitle.textContent = `棋盤已滿，白子以 ${wLines} 條對 ${bLines} 條勝出`;
-        } else {
-          winTitle.textContent = '平局！';
-          winSubtitle.textContent = `棋盤已滿，雙方皆累積 ${bLines} 條五子連線`;
-        }
-        winToast.classList.add('show');
+      if (checkGridOutcome(r, c, color)) {
+        updateHUD();
+        draw();
         return true;
       }
 
-      currentTurn = color === 1 ? 2 : 1;
-      updateScoreAndTurnUI();
-      drawBoard();
-
-      if (gameMode === 'ai' && !gameOver && currentTurn !== myColor) {
-        setTimeout(makeAIMove, 280);
+      let nextTurn = color === 1 ? 2 : 1;
+      if (currentGame === 'othello') {
+        if (getOthelloValidMoves(nextTurn).length === 0) {
+          if (getOthelloValidMoves(color).length === 0) {
+            finishOthelloGame();
+            return true;
+          }
+          showToast('對手無處可下，繼續由你落子');
+          nextTurn = color;
+        }
       }
 
+      currentTurn = nextTurn;
+      updateHUD();
+      draw();
+
+      if (gameMode === 'ai' && !gameOver && currentTurn !== myColor) {
+        setTimeout(makeAIMove, 320);
+      }
       return true;
     }
 
-    // 智慧 AI 算路（永遠以「5 子連線」為評估基準，並持續累積多條線）
-    function makeAIMove() {
-      if (gameOver || gameMode !== 'ai') return;
-      const aiColor = myColor === 1 ? 2 : 1;
-      const diff = aiDifficultySelect.value;
+    function checkGridOutcome(r, c, color) {
+      const meta = GAME_META[currentGame];
+      const winnerName = color === 1 ? meta.p1 : meta.p2;
 
-      if (moveHistory.length === 0) {
-        const mid = Math.floor(boardSize / 2);
-        placeStone(mid, mid, aiColor);
-        return;
-      }
-
-      let bestScore = -Infinity;
-      let candidates = [];
-
-      for (let r = 0; r < boardSize; r++) {
-        for (let c = 0; c < boardSize; c++) {
-          if (board[r][c] !== 0) continue;
-          if (!hasNeighbor(r, c, 2)) continue;
-
-          const attackScore = evaluateFiveLinePoint(r, c, aiColor);
-          const defendScore = evaluateFiveLinePoint(r, c, myColor);
-
-          let total = attackScore * 1.15 + defendScore;
-          if (diff === 'easy') {
-            total += Math.random() * 450;
-          } else if (diff === 'medium') {
-            total += Math.random() * 45;
-          } else {
-            if (attackScore >= 100000) total += 600000;
-            if (defendScore >= 100000) total += 300000;
-            total += Math.random() * 8;
-          }
-
-          if (total > bestScore) {
-            bestScore = total;
-            candidates = [{ r, c }];
-          } else if (Math.abs(total - bestScore) < 1) {
-            candidates.push({ r, c });
-          }
-        }
-      }
-
-      const choice = candidates.length > 0
-        ? candidates[Math.floor(Math.random() * candidates.length)]
-        : { r: Math.floor(boardSize / 2), c: Math.floor(boardSize / 2) };
-
-      placeStone(choice.r, choice.c, aiColor);
-    }
-
-    function hasNeighbor(r, c, dist) {
-      for (let dr = -dist; dr <= dist; dr++) {
-        for (let dc = -dist; dc <= dist; dc++) {
-          if (dr === 0 && dc === 0) continue;
-          const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] !== 0) {
+      if (currentGame === 'gomoku') {
+        const prevCount = completedLines.filter(l => l.color === color).length;
+        completedLines = scanGomokuLines();
+        const newCount = completedLines.filter(l => l.color === color).length;
+        if (newCount > prevCount) {
+          if (newCount >= targetLines) {
+            gameOver = true;
+            winTitle.textContent = `${winnerName} 獲勝！`;
+            winSubtitle.textContent = `率先累積達成 ${newCount} 條五子連線`;
+            winToast.classList.add('show');
             return true;
+          } else {
+            showToast(`${winnerName}達成五子連線！(${newCount}/${targetLines})`);
           }
         }
+      } else if (currentGame === 'tictactoe') {
+        const line = checkLineN(r, c, color, 3);
+        if (line) {
+          gameOver = true; winLineCoords = line;
+          winTitle.textContent = `${winnerName} 獲勝！`;
+          winSubtitle.textContent = '達成三子連線';
+          winToast.classList.add('show');
+          return true;
+        }
+      } else if (currentGame === 'othello') {
+        if (board.every(row => row.every(v => v !== 0))) { finishOthelloGame(); return true; }
+      }
+
+      if (currentGame !== 'othello' && board.every(row => row.every(v => v !== 0))) {
+        gameOver = true;
+        winTitle.textContent = '平局！';
+        winSubtitle.textContent = '棋盤已滿，雙方勢均力敵';
+        winToast.classList.add('show');
+        return true;
       }
       return false;
     }
 
-    function evaluateFiveLinePoint(r, c, color) {
+    function finishOthelloGame() {
+      gameOver = true;
+      let c1 = 0, c2 = 0;
+      board.forEach(r => r.forEach(v => { if (v === 1) c1++; if (v === 2) c2++; }));
+      winTitle.textContent = c1 > c2 ? '黑棋獲勝！' : (c2 > c1 ? '白棋獲勝！' : '平局！');
+      winSubtitle.textContent = `最終比數：黑棋 ${c1} 子 vs 白棋 ${c2} 子`;
+      winToast.classList.add('show');
+      updateHUD(); draw();
+    }
+
+    function checkLineN(r, c, color, targetN) {
       const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
-      let score = 0;
-
       for (const [dr, dc] of dirs) {
-        let count = 1;
-        let openEnds = 0;
-
+        const line = [{ r, c }];
         let nr = r + dr, nc = c + dc;
-        while (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === color) {
-          count++;
-          nr += dr;
-          nc += dc;
+        while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === color) {
+          line.push({ r: nr, c: nc }); nr += dr; nc += dc;
         }
-        if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === 0) {
-          openEnds++;
+        nr = r - dr; nc = c - dc;
+        while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === color) {
+          line.unshift({ r: nr, c: nc }); nr -= dr; nc -= dc;
         }
+        if (line.length >= targetN) return line;
+      }
+      return null;
+    }
 
-        nr = r - dr;
-        nc = c - dc;
-        while (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === color) {
-          count++;
-          nr -= dr;
-          nc -= dc;
-        }
-        if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize && board[nr][nc] === 0) {
-          openEnds++;
-        }
-
-        // 若該位置能形成剛好 5 連珠（或推進活四/活三）給予高分
-        if (count === 5) {
-          score += 100000;
-        } else if (count === 4) {
-          score += openEnds === 2 ? 18000 : (openEnds === 1 ? 3000 : 0);
-        } else if (count === 3) {
-          score += openEnds === 2 ? 1500 : (openEnds === 1 ? 300 : 0);
-        } else if (count === 2) {
-          score += openEnds === 2 ? 150 : 30;
-        } else if (count > 5) {
-          // 超過 5 顆不會再多算一條線，權重略降以鼓勵尋找新的五連路線
-          score += 500;
+    function scanGomokuLines() {
+      const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      const found = [], seen = new Set();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const color = board[r][c];
+          if (!color) continue;
+          for (const [dr, dc] of dirs) {
+            const er = r + dr * 4, ec = c + dc * 4;
+            if (er < 0 || er >= rows || ec < 0 || ec >= cols) continue;
+            let ok = true; const cells = [];
+            for (let s = 0; s < 5; s++) {
+              if (board[r + dr * s][c + dc * s] !== color) { ok = false; break; }
+              cells.push(`${r + dr * s},${c + dc * s}`);
+            }
+            if (ok) {
+              const pr = r - dr, pc = c - dc;
+              if (pr >= 0 && pr < rows && pc >= 0 && pc < cols && board[pr][pc] === color) continue;
+              const id = `${color}:${cells.join('|')}`;
+              if (!seen.has(id)) { seen.add(id); found.push({ id, color, start: { r, c }, end: { r: er, c: ec } }); }
+            }
+          }
         }
       }
-      return score;
+      return found;
+    }
+
+    function getOthelloFlips(r, c, color) {
+      const opp = color === 1 ? 2 : 1;
+      const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+      let totalFlips = [];
+      for (const [dr, dc] of dirs) {
+        let nr = r + dr, nc = c + dc, temp = [];
+        while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === opp) {
+          temp.push([nr, nc]); nr += dr; nc += dc;
+        }
+        if (temp.length > 0 && nr >= 0 && nr < 8 && nc >= 0 && nc < 8 && board[nr][nc] === color) {
+          totalFlips = totalFlips.concat(temp);
+        }
+      }
+      return totalFlips;
+    }
+
+    function getOthelloValidMoves(color) {
+      const moves = [];
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (board[r][c] === 0 && getOthelloFlips(r, c, color).length > 0) moves.push({ r, c });
+        }
+      }
+      return moves;
+    }
+
+    // ================= 智慧 AI =================
+    function makeAIMove() {
+      if (gameOver || gameMode !== 'ai') return;
+      const ai = myColor === 1 ? 2 : 1;
+
+      if (currentGame === 'watermelon') {
+        const allMoves = [];
+        for (let from = 0; from < wmPieces.length; from++) {
+          if (wmPieces[from] === ai) {
+            getWatermelonValidMoves(from, ai).forEach(to => {
+              const sim = simulateWatermelonMove(wmPieces, from, to, ai);
+              // 優先選擇能吃掉對手棋子、其次往中心靠攏的步法
+              const centerScore = to === 0 ? 15 : (to <= 4 ? 8 : 0);
+              allMoves.push({ from, to, score: sim.capturedCount * 100 + centerScore + Math.random() * 10 });
+            });
+          }
+        }
+        if (allMoves.length > 0) {
+          allMoves.sort((a, b) => b.score - a.score);
+          executeWatermelonMove(allMoves[0].from, allMoves[0].to, ai);
+        }
+        return;
+      }
+
+      if (currentGame === 'othello') {
+        const moves = getOthelloValidMoves(ai);
+        if (moves.length === 0) return;
+        moves.sort((a, b) => {
+          const cornerA = (a.r === 0 || a.r === 7) && (a.c === 0 || a.c === 7) ? 100 : 0;
+          const cornerB = (b.r === 0 || b.r === 7) && (b.c === 0 || b.c === 7) ? 100 : 0;
+          return (cornerB + getOthelloFlips(b.r, b.c, ai).length) - (cornerA + getOthelloFlips(a.r, a.c, ai).length);
+        });
+        handleGridMove(moves[0].r, moves[0].c, ai);
+        return;
+      }
+
+      const targetN = currentGame === 'tictactoe' ? 3 : 5;
+      let best = -Infinity, picks = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (board[r][c] !== 0) continue;
+          const atk = evalCell(r, c, ai, targetN);
+          const def = evalCell(r, c, myColor, targetN);
+          const centerBonus = (rows - Math.abs(r - rows / 2) - Math.abs(c - cols / 2));
+          const score = atk * 1.15 + def + centerBonus + Math.random() * 12;
+          if (score > best) { best = score; picks = [{ r, c }]; }
+        }
+      }
+      if (picks.length > 0) handleGridMove(picks[0].r, picks[0].c, ai);
+    }
+
+    function evalCell(r, c, color, targetN) {
+      const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      let s = 0;
+      for (const [dr, dc] of dirs) {
+        let cnt = 1;
+        let nr = r + dr, nc = c + dc;
+        while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === color) { cnt++; nr += dr; nc += dc; }
+        nr = r - dr; nc = c - dc;
+        while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === color) { cnt++; nr -= dr; nc -= dc; }
+        if (cnt >= targetN) s += 100000;
+        else if (cnt === targetN - 1) s += 5000;
+        else s += cnt * 80;
+      }
+      return s;
+    }
+
+    // ================= 滑鼠與觸控點擊映射 =================
+    function getNormalizedPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        nx: (clientX - rect.left) / rect.width,
+        ny: (clientY - rect.top) / rect.height,
+        x: ((clientX - rect.left) / rect.width) * canvas.width,
+        y: ((clientY - rect.top) / rect.height) * canvas.height
+      };
     }
 
     canvas.addEventListener('mousemove', e => {
-      hoverPos = getGridPosFromEvent(e);
-      drawBoard();
+      if (currentGame !== 'gomoku') return;
+      const { x, y } = getNormalizedPos(e);
+      const pad = canvas.width * 0.065;
+      const cell = (canvas.width - pad * 2) / (rows - 1);
+      const c = Math.round((x - pad) / cell), r = Math.round((y - pad) / cell);
+      hoverCell = (r >= 0 && r < rows && c >= 0 && c < cols) ? { r, c } : null;
+      draw();
     });
 
-    canvas.addEventListener('mouseleave', () => {
-      hoverPos = null;
-      drawBoard();
-    });
+    canvas.addEventListener('mouseleave', () => { hoverCell = null; draw(); });
 
     canvas.addEventListener('click', e => {
-      if (gameOver) return;
-      const pos = getGridPosFromEvent(e);
-      if (!pos) return;
+      if (gameOver || !canLocalPlay()) return;
+      const { nx, ny, x, y } = getNormalizedPos(e);
 
-      if (gameMode === 'ai') {
-        if (currentTurn !== myColor) return;
-        placeStone(pos.r, pos.c, myColor);
-      } else {
-        if (!conn || !conn.open) {
-          alert('尚未與對手連線！請先建立房間並分享邀請網址，或輸入房號加入。');
-          return;
+      if (currentGame === 'watermelon') {
+        // 尋找點擊最近的西瓜棋節點
+        let nearestIdx = -1, minDist = 0.065;
+        WM_NODES.forEach((pt, idx) => {
+          const d = Math.hypot(nx - pt.x, ny - pt.y);
+          if (d < minDist) { minDist = d; nearestIdx = idx; }
+        });
+        if (nearestIdx === -1) return;
+
+        // 點選自己的棋子進行選取或切換
+        if (wmPieces[nearestIdx] === myColor) {
+          wmSelectedNode = (wmSelectedNode === nearestIdx) ? null : nearestIdx;
+          draw();
+        } else if (wmSelectedNode !== null && wmPieces[nearestIdx] === 0) {
+          // 嘗試移動到該空節點
+          executeWatermelonMove(wmSelectedNode, nearestIdx, myColor);
         }
-        if (currentTurn !== myColor) return;
-        placeStone(pos.r, pos.c, myColor);
+        return;
+      }
+
+      if (currentGame === 'gomoku') {
+        const pad = canvas.width * 0.065;
+        const cell = (canvas.width - pad * 2) / (rows - 1);
+        const c = Math.round((x - pad) / cell), r = Math.round((y - pad) / cell);
+        if (r >= 0 && r < rows && c >= 0 && c < cols) handleGridMove(r, c, myColor);
+      } else {
+        const c = Math.floor(x / (canvas.width / cols));
+        const r = Math.floor(y / (canvas.height / rows));
+        if (r >= 0 && r < rows && c >= 0 && c < cols) handleGridMove(r, c, myColor);
       }
     });
 
-    // 悔棋（同步重新計算累積條數）
+    // ================= 悔棋與連線控制 =================
     function performUndo(isRemote = false) {
-      if (moveHistory.length === 0 || gameOver) return;
-
+      if (history.length === 0 || gameOver) return;
       if (gameMode === 'ai') {
-        const steps = moveHistory.length >= 2 ? 2 : 1;
+        const steps = history.length >= 2 ? 2 : 1;
         for (let i = 0; i < steps; i++) {
-          const last = moveHistory.pop();
-          if (last) board[last.r][last.c] = 0;
+          const prev = history.pop();
+          if (currentGame === 'watermelon') wmPieces = prev;
+          else board = prev;
         }
         currentTurn = myColor;
       } else {
-        const last = moveHistory.pop();
-        if (last) {
-          board[last.r][last.c] = 0;
-          currentTurn = last.color;
-        }
-        if (!isRemote && conn && conn.open) {
-          conn.send({ type: 'UNDO' });
-        }
+        const prev = history.pop();
+        if (currentGame === 'watermelon') wmPieces = prev;
+        else board = prev;
+        currentTurn = currentTurn === 1 ? 2 : 1;
+        if (!isRemote && conn && conn.open) conn.send({ type: 'UNDO' });
       }
-      completedLines = recalculateAllFiveLines();
-      updateScoreAndTurnUI();
-      drawBoard();
+      wmSelectedNode = null;
+      if (currentGame === 'gomoku') completedLines = scanGomokuLines();
+      updateHUD(); draw();
     }
 
-    undoBtn.addEventListener('click', () => performUndo(false));
+    document.getElementById('undoBtn').onclick = () => performUndo(false);
 
-    restartBtn.addEventListener('click', () => {
-      if (gameMode === 'online' && conn && conn.open) {
-        if (!isRoomHost) {
-          alert('僅房主可以更改規則與重新開局！');
+    function syncAndReset() {
+      initGame();
+      if (gameMode === 'online' && conn && conn.open && isRoomHost) {
+        conn.send({ type: 'SYNC', game: currentGame, rows, targetLines });
+      }
+    }
+
+    document.getElementById('restartBtn').onclick = syncAndReset;
+    document.getElementById('modalRestartBtn').onclick = syncAndReset;
+    boardSizeSelect.onchange = syncAndReset;
+    targetLinesSelect.onchange = syncAndReset;
+    aiDifficultySelect.onchange = initGame;
+    playerColorSelect.onchange = initGame;
+
+    gameBtns.forEach(btn => {
+      btn.onclick = () => {
+        if (gameMode === 'online' && conn && conn.open && !isRoomHost) {
+          alert('僅房主可以切換棋類遊戲！');
           return;
         }
-        initBoardState();
-        conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
-      } else {
-        initBoardState();
-      }
+        gameBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentGame = btn.dataset.game;
+        syncAndReset();
+      };
     });
 
-    modalRestartBtn.addEventListener('click', () => restartBtn.click());
-
-    boardSizeSelect.addEventListener('change', () => {
-      if (gameMode === 'online' && conn && conn.open && isRoomHost) {
-        initBoardState();
-        conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
-      } else {
-        initBoardState();
-      }
-    });
-
-    targetLinesSelect.addEventListener('change', () => {
-      if (gameMode === 'online' && conn && conn.open && isRoomHost) {
-        initBoardState();
-        conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
-      } else {
-        initBoardState();
-      }
-    });
-
-    aiDifficultySelect.addEventListener('change', initBoardState);
-    playerColorSelect.addEventListener('change', initBoardState);
-
-    tabAI.addEventListener('click', () => {
+    tabAI.onclick = () => {
       gameMode = 'ai';
-      tabAI.classList.add('active');
-      tabOnline.classList.remove('active');
-      aiSettingsBox.classList.remove('hidden');
-      onlineSettingsBox.classList.add('hidden');
-      boardSizeSelect.disabled = false;
-      targetLinesSelect.disabled = false;
-      initBoardState();
-    });
+      tabAI.classList.add('active'); tabOnline.classList.remove('active');
+      aiSettingsBox.classList.remove('hidden'); onlineSettingsBox.classList.add('hidden');
+      initGame();
+    };
 
-    tabOnline.addEventListener('click', () => {
+    tabOnline.onclick = () => {
       gameMode = 'online';
-      tabOnline.classList.add('active');
-      tabAI.classList.remove('active');
-      onlineSettingsBox.classList.remove('hidden');
-      aiSettingsBox.classList.add('hidden');
-      initBoardState();
-    });
+      tabOnline.classList.add('active'); tabAI.classList.remove('active');
+      onlineSettingsBox.classList.remove('hidden'); aiSettingsBox.classList.add('hidden');
+      initGame();
+    };
 
-    // PeerJS 遠端連線系統
-    function setupPeerConnection(connection) {
-      conn = connection;
-
+    function setupConn(c) {
+      conn = c;
       conn.on('open', () => {
-        networkStatus.textContent = isRoomHost
-          ? '狀態：對手已加入房間！你執【黑子】先手'
-          : '狀態：已成功連入房間！你執【白子】後手';
+        networkStatus.textContent = isRoomHost ? '狀態：對手已加入！你執【先手】' : '狀態：已連入房間！你執【後手】';
         networkStatus.classList.add('connected');
-
-        if (isRoomHost) {
-          myColor = 1;
-          boardSizeSelect.disabled = false;
-          targetLinesSelect.disabled = false;
-          initBoardState();
-          conn.send({ type: 'SYNC_CONFIG', boardSize, targetLines });
-        } else {
-          myColor = 2;
-          boardSizeSelect.disabled = true;
-          targetLinesSelect.disabled = true;
-        }
-        updateScoreAndTurnUI();
+        if (isRoomHost) { myColor = 1; syncAndReset(); }
+        else { myColor = 2; }
+        updateHUD();
       });
-
       conn.on('data', data => {
-        if (data.type === 'SYNC_CONFIG') {
-          boardSizeSelect.value = String(data.boardSize);
+        if (data.type === 'SYNC') {
+          currentGame = data.game;
+          gameBtns.forEach(b => b.classList.toggle('active', b.dataset.game === currentGame));
+          boardSizeSelect.value = String(data.rows);
           targetLinesSelect.value = String(data.targetLines);
-          initBoardState();
+          initGame();
         } else if (data.type === 'MOVE') {
-          placeStone(data.r, data.c, data.color, true);
+          handleGridMove(data.r, data.c, data.color, true);
+        } else if (data.type === 'WM_MOVE') {
+          executeWatermelonMove(data.from, data.to, data.color, true);
         } else if (data.type === 'UNDO') {
           performUndo(true);
         }
       });
-
       conn.on('close', () => {
-        networkStatus.textContent = '狀態：對手已離開房間，連線中斷';
+        networkStatus.textContent = '狀態：對手已離線';
         networkStatus.classList.remove('connected');
-        boardSizeSelect.disabled = false;
-        targetLinesSelect.disabled = false;
-        updateScoreAndTurnUI();
+        updateHUD();
       });
     }
 
-    createRoomBtn.addEventListener('click', () => {
+    createRoomBtn.onclick = () => {
       if (peer) peer.destroy();
-      isRoomHost = true;
-      myColor = 1;
-      const shortCode = 'GMK-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-      networkStatus.textContent = '狀態：正在向雲端註冊房號...';
-      networkStatus.classList.remove('connected');
-
-      peer = new Peer(shortCode);
-
+      isRoomHost = true; myColor = 1;
+      const code = 'BG-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+      networkStatus.textContent = '狀態：註冊房號中...';
+      peer = new Peer(code);
       peer.on('open', id => {
         myRoomIdEl.textContent = id;
         copyLinkBtn.disabled = false;
-        networkStatus.textContent = '狀態：房間已建立！請複製邀請網址傳給朋友';
+        networkStatus.textContent = '狀態：房間已建立！複製網址傳給朋友即可開戰';
       });
+      peer.on('connection', setupConn);
+    };
 
-      peer.on('connection', incomingConn => {
-        setupPeerConnection(incomingConn);
-      });
-
-      peer.on('error', err => {
-        networkStatus.textContent = `連線錯誤：${err.type}，請重試`;
-      });
-    });
-
-    copyLinkBtn.addEventListener('click', () => {
-      const roomId = myRoomIdEl.textContent;
-      const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-      navigator.clipboard.writeText(inviteUrl).then(() => {
-        copyLinkBtn.textContent = '已複製連結！';
+    copyLinkBtn.onclick = () => {
+      const url = `${window.location.origin}${window.location.pathname}?room=${myRoomIdEl.textContent}`;
+      navigator.clipboard.writeText(url).then(() => {
+        copyLinkBtn.textContent = '已複製！';
         setTimeout(() => copyLinkBtn.textContent = '複製邀請網址', 2000);
       });
-    });
+    };
 
-    function joinRoomById(targetId) {
-      const cleanId = targetId.trim();
-      if (!cleanId) return;
+    function joinRoom(id) {
+      const clean = id.trim();
+      if (!clean) return;
       if (peer) peer.destroy();
-
-      isRoomHost = false;
-      myColor = 2;
-      networkStatus.textContent = `狀態：正在連線至房間 ${cleanId}...`;
-      networkStatus.classList.remove('connected');
-
+      isRoomHost = false; myColor = 2;
+      networkStatus.textContent = `狀態：連線至 ${clean}...`;
       peer = new Peer();
-      peer.on('open', () => {
-        const outgoingConn = peer.connect(cleanId);
-        setupPeerConnection(outgoingConn);
-      });
-
-      peer.on('error', () => {
-        networkStatus.textContent = `加入失敗：找不到房號 ${cleanId}`;
-      });
+      peer.on('open', () => setupConn(peer.connect(clean)));
     }
 
-    joinRoomBtn.addEventListener('click', () => joinRoomById(joinRoomInput.value));
+    joinRoomBtn.onclick = () => joinRoom(joinRoomInput.value);
 
     window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      const roomParam = params.get('room');
+      const roomParam = new URLSearchParams(window.location.search).get('room');
       if (roomParam) {
         tabOnline.click();
         joinRoomInput.value = roomParam;
-        joinRoomById(roomParam);
+        joinRoom(roomParam);
       } else {
-        initBoardState();
+        initGame();
       }
     });
   </script>
