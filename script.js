@@ -8,7 +8,12 @@
     const setupBackHomeBtn = document.getElementById('setupBackHomeBtn');
     const setupModeBadge = document.getElementById('setupModeBadge');
     const onlineSetupNote = document.getElementById('onlineSetupNote');
+    const joinRoomSetup = document.getElementById('joinRoomSetup');
+    const setupGameOptions = document.getElementById('setupGameOptions');
     const startGameBtn = document.getElementById('startGameBtn');
+    const joinRoomBtn = document.getElementById('joinRoomBtn');
+    const roomCodeInput = document.getElementById('roomCodeInput');
+    const joinRoomError = document.getElementById('joinRoomError');
 
     const gameBtns = document.querySelectorAll('.game-btn');
     const gomokuOptions = document.getElementById('gomokuOptions');
@@ -26,6 +31,7 @@
 
     const myRoomIdEl = document.getElementById('myRoomId');
     const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const roomOwnerInfo = document.getElementById('roomOwnerInfo');
     const networkStatus = document.getElementById('networkStatus');
 
     const turnStoneIcon = document.getElementById('turnStoneIcon');
@@ -159,6 +165,7 @@
     // 遊戲全域狀態
     let currentGame = 'gomoku';
     let gameMode = 'ai';
+    let setupMode = 'ai';
     let rows = 15, cols = 15;
     let targetLines = 1;
     let board = [];
@@ -964,13 +971,21 @@
     playerColorSelect.onchange = initGame;
 
     function openSetup(mode) {
-      gameMode = mode;
+      setupMode = mode;
+      gameMode = mode === 'ai' ? 'ai' : 'online';
       homeScreen.classList.add('hidden');
       appContainer.classList.add('hidden');
       setupScreen.classList.remove('hidden');
-      setupModeBadge.textContent = mode === 'online' ? '建立房間設定' : 'AI 對戰設定';
+      setupModeBadge.textContent = {
+        ai: 'AI 對戰設定',
+        create: '建立房間設定',
+        join: '加入房間設定'
+      }[mode];
+      setupGameOptions.classList.toggle('hidden', mode === 'join');
       aiSettingsBox.classList.toggle('hidden', mode !== 'ai');
-      onlineSetupNote.classList.toggle('hidden', mode !== 'online');
+      onlineSetupNote.classList.toggle('hidden', mode !== 'create');
+      joinRoomSetup.classList.toggle('hidden', mode !== 'join');
+      joinRoomError.classList.add('hidden');
       initGame();
     }
 
@@ -982,6 +997,8 @@
       conn = null;
       isRoomHost = false;
       myColor = 1;
+      gameMode = 'ai';
+      setupMode = 'ai';
       myRoomIdEl.textContent = '尚未建立';
       copyLinkBtn.disabled = true;
       copyLinkBtn.textContent = '複製邀請網址';
@@ -1006,13 +1023,25 @@
     });
 
     document.getElementById('startSoloBtn').onclick = () => openSetup('ai');
-    document.getElementById('startOnlineBtn').onclick = () => openSetup('online');
+    document.getElementById('startOnlineBtn').onclick = () => openSetup('create');
+    joinRoomBtn.onclick = () => openSetup('join');
+    roomCodeInput.addEventListener('input', () => joinRoomError.classList.add('hidden'));
     startGameBtn.onclick = () => {
+      const roomId = roomCodeInput.value.trim();
+      if (setupMode === 'join' && !roomId) {
+        joinRoomError.textContent = '請輸入朋友提供的房間代碼。';
+        joinRoomError.classList.remove('hidden');
+        roomCodeInput.focus();
+        return;
+      }
+
       setupScreen.classList.add('hidden');
       appContainer.classList.remove('hidden');
       onlineSettingsBox.classList.toggle('hidden', gameMode !== 'online');
+      roomOwnerInfo.classList.toggle('hidden', setupMode !== 'create');
       initGame();
-      if (gameMode === 'online') createRoom();
+      if (setupMode === 'create') createRoom();
+      if (setupMode === 'join') joinRoom(roomId);
     };
 
     setupBackHomeBtn.onclick = () => {
@@ -1062,12 +1091,20 @@
       const code = 'BG-' + Math.random().toString(36).substring(2, 7).toUpperCase();
       networkStatus.textContent = '狀態：註冊房號中...';
       peer = new Peer(code);
+      peer.on('error', handlePeerError);
       peer.on('open', id => {
         myRoomIdEl.textContent = id;
         copyLinkBtn.disabled = false;
         networkStatus.textContent = '狀態：房間已建立！複製網址傳給朋友即可開戰';
       });
       peer.on('connection', setupConn);
+    }
+
+    function handlePeerError(error) {
+      networkStatus.textContent = error.type === 'peer-unavailable'
+        ? '狀態：找不到此房間，請確認房間代碼。'
+        : `狀態：連線失敗（${error.type}）`;
+      networkStatus.classList.remove('connected');
     }
 
     copyLinkBtn.onclick = () => {
@@ -1085,6 +1122,7 @@
       isRoomHost = false; myColor = 2;
       networkStatus.textContent = `狀態：連線至 ${clean}...`;
       peer = new Peer();
+      peer.on('error', handlePeerError);
       peer.on('open', () => setupConn(peer.connect(clean)));
     }
 
@@ -1095,7 +1133,9 @@
         setupScreen.classList.add('hidden');
         appContainer.classList.remove('hidden');
         gameMode = 'online';
+        setupMode = 'join';
         onlineSettingsBox.classList.remove('hidden');
+        roomOwnerInfo.classList.add('hidden');
         initGame();
         joinRoom(roomParam);
       } else {

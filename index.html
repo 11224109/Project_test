@@ -23,10 +23,11 @@
         <div class="home-hero-copy">
           <p class="home-eyebrow"><span></span> 思考・佈局・享受對弈</p>
           <h1>把每一步，<br /><span>走成精彩。</span></h1>
-          <p class="home-intro">先選擇 AI 對戰或建立房間，再挑選喜歡的棋類與棋盤設定，準備好就開始。</p>
+          <p class="home-intro">選擇 AI 對戰、建立房間，或輸入房間代碼加入朋友的對局。</p>
           <div class="home-actions">
             <button type="button" class="home-primary" id="startSoloBtn">選擇 AI 對戰 <span aria-hidden="true">→</span></button>
             <button type="button" class="home-secondary" id="startOnlineBtn"><span aria-hidden="true">◎</span> 建立房間</button>
+            <button type="button" class="home-secondary" id="joinRoomBtn"><span aria-hidden="true">↗</span> 加入房間</button>
           </div>
           <p class="home-note"><span aria-hidden="true">✦</span> 設定完成後才會進入棋盤</p>
         </div>
@@ -104,43 +105,52 @@
         <p>選擇遊戲與棋盤規則，按下開始後就會進入棋局。</p>
       </div>
 
-      <div class="control-group">
-        <label>選擇棋類遊戲</label>
-        <div class="game-grid" id="gameGrid">
-          <button type="button" class="game-btn active" data-game="gomoku">五子棋 (多線)</button>
-          <button type="button" class="game-btn" data-game="tictactoe">井字棋 (自由格數)</button>
-          <button type="button" class="game-btn" data-game="othello">黑白棋 (翻轉)</button>
-          <button type="button" class="game-btn" data-game="watermelon">🍉 西瓜棋</button>
+      <div class="setup-game-options" id="setupGameOptions">
+        <div class="control-group">
+          <label>選擇棋類遊戲</label>
+          <div class="game-grid" id="gameGrid">
+            <button type="button" class="game-btn active" data-game="gomoku">五子棋 (多線)</button>
+            <button type="button" class="game-btn" data-game="tictactoe">井字棋 (自由格數)</button>
+            <button type="button" class="game-btn" data-game="othello">黑白棋 (翻轉)</button>
+            <button type="button" class="game-btn" data-game="watermelon">🍉 西瓜棋</button>
+          </div>
+        </div>
+
+        <div class="control-row" id="gomokuOptions">
+          <div class="control-group">
+            <label for="boardSizeSelect">棋盤格數</label>
+            <select id="boardSizeSelect">
+              <option value="9">9 × 9</option>
+              <option value="11">11 × 11</option>
+              <option value="13">13 × 13</option>
+              <option value="15" selected>15 × 15</option>
+              <option value="17">17 × 17</option>
+              <option value="19">19 × 19</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="targetLinesSelect">獲勝五連線數</label>
+            <select id="targetLinesSelect">
+              <option value="1" selected>連成 1 條勝</option>
+              <option value="2">累積 2 條勝</option>
+              <option value="3">累積 3 條勝</option>
+              <option value="4">累積 4 條勝</option>
+              <option value="5">累積 5 條勝</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group hidden" id="gridSizeOptions">
+          <label for="gridSizeSelect" id="gridSizeLabel">棋盤格數</label>
+          <select id="gridSizeSelect"></select>
         </div>
       </div>
 
-      <div class="control-row" id="gomokuOptions">
-        <div class="control-group">
-          <label for="boardSizeSelect">棋盤格數</label>
-          <select id="boardSizeSelect">
-            <option value="9">9 × 9</option>
-            <option value="11">11 × 11</option>
-            <option value="13">13 × 13</option>
-            <option value="15" selected>15 × 15</option>
-            <option value="17">17 × 17</option>
-            <option value="19">19 × 19</option>
-          </select>
-        </div>
-        <div class="control-group">
-          <label for="targetLinesSelect">獲勝五連線數</label>
-          <select id="targetLinesSelect">
-            <option value="1" selected>連成 1 條勝</option>
-            <option value="2">累積 2 條勝</option>
-            <option value="3">累積 3 條勝</option>
-            <option value="4">累積 4 條勝</option>
-            <option value="5">累積 5 條勝</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="control-group hidden" id="gridSizeOptions">
-        <label for="gridSizeSelect" id="gridSizeLabel">棋盤格數</label>
-        <select id="gridSizeSelect"></select>
+      <div class="control-group hidden" id="joinRoomSetup">
+        <label for="roomCodeInput">朋友的房間代碼</label>
+        <input type="text" id="roomCodeInput" placeholder="輸入房間代碼，例如 BG-ABCDE" autocomplete="off" />
+        <p class="setup-field-hint">加入後會自動同步房主選擇的遊戲與棋盤設定。</p>
+        <div class="status-pill hidden" id="joinRoomError" role="alert"></div>
       </div>
 
       <div class="control-row" id="aiSettingsBox">
@@ -185,7 +195,7 @@
       </button>
 
       <div class="online-box hidden" id="onlineSettingsBox">
-        <div class="control-group">
+        <div class="control-group" id="roomOwnerInfo">
           <label>我的房間代碼（分享給朋友）</label>
           <div class="room-id-display">
             <span id="myRoomId">尚未建立</span>
