@@ -3,16 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ANIME WILD HUNTER | 動漫荒野槍手</title>
+  <title>GOMOKU MULTI-LINE | 多線五子棋對戰</title>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     :root {
-      --bg-grass: #14261c;
-      --anime-pink: #ff3b9a;
-      --anime-cyan: #00f0ff;
-      --anime-gold: #ffd700;
-      --anime-green: #22c55e;
-      --glass-bg: rgba(14, 22, 20, 0.78);
-      --glass-border: rgba(255, 255, 255, 0.16);
+      --bg-dark: #0f172a;
+      --panel-bg: #1e293b;
+      --board-wood: #deb887;
+      --board-border: #8b5a2b;
+      --accent-cyan: #38bdf8;
+      --accent-gold: #fbbf24;
+      --accent-pink: #f43f5e;
+      --accent-green: #22c55e;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -23,1272 +25,133 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: var(--bg-grass);
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg-dark) 80%);
+      color: var(--text-main);
       font-family: 'Segoe UI', 'Microsoft JhengHei', system-ui, sans-serif;
-      color: var(--text-main);
-    }
-
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      cursor: crosshair;
-    }
-
-    /* 頂部狀態列 */
-    .hud-top {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      pointer-events: none;
-      z-index: 10;
-      gap: 10px;
-    }
-
-    .hud-left {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      pointer-events: auto;
-    }
-
-    .player-card {
-      display: flex;
       align-items: center;
-      gap: 10px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border);
-      padding: 8px 14px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      padding: 14px;
     }
 
-    .avatar-dot {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 900;
-      font-size: 0.95rem;
-      color: #fff;
-      border: 2px solid #fff;
-    }
-
-    .hp-section {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 135px;
-    }
-
-    .char-name-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.78rem;
-      font-weight: 800;
-    }
-
-    .hp-bar-bg {
+    .app-container {
       width: 100%;
-      height: 9px;
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .hp-bar-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #ef4444, #22c55e);
-      transition: width 0.15s ease;
-    }
-
-    .hud-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      pointer-events: auto;
-    }
-
-    .money-pill {
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border: 1.5px solid rgba(255, 215, 0, 0.45);
-      padding: 8px 14px;
-      border-radius: 14px;
-      font-size: 1.05rem;
-      font-weight: 900;
-      color: var(--anime-gold);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .menu-btn {
-      background: linear-gradient(135deg, var(--anime-pink), #9333ea);
-      color: #fff;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255, 59, 154, 0.4);
-      transition: transform 0.1s;
-    }
-
-    .menu-btn:active {
-      transform: scale(0.95);
-    }
-
-    /* 底部武器快捷切換列 */
-    .weapon-dock {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      padding: 8px 12px;
-      border-radius: 20px;
-      z-index: 12;
-      max-width: 95vw;
-      overflow-x: auto;
-    }
-
-    .w-slot {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1.5px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 6px 10px;
-      min-width: 74px;
-      text-align: center;
-      cursor: pointer;
-      color: var(--text-main);
-      transition: all 0.15s;
-    }
-
-    .w-slot.locked {
-      opacity: 0.45;
-    }
-
-    .w-slot.active {
-      background: rgba(0, 240, 255, 0.2);
-      border-color: var(--anime-cyan);
-      box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
-    }
-
-    .w-key {
-      font-size: 0.65rem;
-      color: var(--anime-cyan);
-      font-weight: 800;
-      display: block;
-    }
-
-    .w-name {
-      font-size: 0.76rem;
-      font-weight: 700;
-      display: block;
-      margin-top: 2px;
-      white-space: nowrap;
-    }
-
-    .w-price {
-      font-size: 0.65rem;
-      color: var(--anime-gold);
-      display: block;
-    }
-
-    /* 手機虛擬搖桿提示與大招/射擊輔助 */
-    .mobile-hint {
-      position: fixed;
-      bottom: 84px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.72rem;
-      color: rgba(255, 255, 255, 0.55);
-      pointer-events: none;
-      white-space: nowrap;
-      z-index: 9;
-    }
-
-    /* 角色與軍火庫彈窗 */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 12, 10, 0.86);
-      backdrop-filter: blur(8px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-      z-index: 30;
-    }
-
-    .overlay.hidden {
-      display: none;
-    }
-
-    .modal-box {
-      background: #111c19;
-      border: 1.5px solid rgba(0, 240, 255, 0.35);
-      border-radius: 24px;
-      padding: 22px;
-      width: 100%;
-      max-width: 520px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: var(--anime-cyan);
-    }
-
-    .section-title {
-      font-size: 0.82rem;
-      font-weight: 800;
-      color: var(--anime-pink);
-      margin: 14px 0 8px;
-      letter-spacing: 0.5px;
-    }
-
-    .char-grid {
+      max-width: 980px;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      grid-template-columns: 330px 1fr;
+      gap: 18px;
+      align-items: start;
     }
 
-    .char-card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1.5px solid rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 10px 8px;
-      text-align: center;
+    @media (max-width: 840px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        max-width: 540px;
+      }
+    }
+
+    .sidebar {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: var(--accent-cyan);
+    }
+
+    .rule-badge {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: var(--accent-gold);
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .mode-tab {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 8px;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.15s;
     }
 
-    .char-card.active {
-      border-color: var(--anime-pink);
-      background: rgba(255, 59, 154, 0.16);
-      box-shadow: 0 0 14px rgba(255, 59, 154, 0.35);
+    .mode-tab.active {
+      background: var(--accent-cyan);
+      color: #0f172a;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
     }
 
-    .char-card .c-name {
-      font-size: 0.85rem;
-      font-weight: 800;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .char-card .c-perk {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-
-    .gun-list {
+    .control-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .gun-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 10px 14px;
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
 
-    .gun-info h4 {
-      margin: 0 0 3px;
-      font-size: 0.9rem;
-      color: #fff;
-    }
-
-    .gun-info p {
-      margin: 0;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-
-    .btn-action {
-      border: none;
-      border-radius: 10px;
-      padding: 8px 14px;
+    label {
       font-size: 0.78rem;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
+      color: var(--text-muted);
+      font-weight: 700;
     }
 
-    .btn-buy {
-      background: var(--anime-gold);
-      color: #111;
+    select, input[type="text"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      outline: none;
     }
 
-    .btn-buy:disabled {
-      background: #334155;
-      color: #64748b;
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    select:disabled, input:disabled {
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
-    .btn-equip {
-      background: var(--anime-cyan);
-      color: #091316;
-    }
-
-    .btn-equipped {
-      background: rgba(34, 197, 94, 0.25);
-      color: #4ade80;
-      border: 1px solid #4ade80;
-      cursor: default;
-    }
-
-    .btn-play {
-      width: 100%;
-      margin-top: 18px;
-      background: linear-gradient(135deg, var(--anime-pink), #7e22ce);
-      color: #fff;
-      border: none;
-      padding: 13px;
-      border-radius: 999px;
-      font-size: 1rem;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(255, 59, 154, 0.45);
-    }
-  </style>
-</head>
-<body>
-
-  <!-- 頂部 HUD -->
-  <div class="hud-top">
-    <div class="hud-left">
-      <div class="player-card">
-        <div class="avatar-dot" id="hudAvatar" style="background:#ff3b9a;">莉</div>
-        <div class="hp-section">
-          <div class="char-name-row">
-            <span id="hudCharName">緋紅雙馬尾・莉莉</span>
-            <span id="hudHpText">100 / 100</span>
-          </div>
-          <div class="hp-bar-bg">
-            <div class="hp-bar-fill" id="hudHpBar"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="hud-right">
-      <div class="money-pill" id="hudMoney">$ 0</div>
-      <button class="menu-btn" id="openShopBtn">角色 / 軍火庫</button>
-    </div>
-  </div>
-
-  <div class="mobile-hint">WASD / 方向鍵移動 · 滑鼠瞄準按住射擊（手機拖曳自動開火） · 數字鍵 1~5 換槍</div>
-
-  <!-- 底部武器快捷列 -->
-  <div class="weapon-dock" id="weaponDock"></div>
-
-  <!-- 全畫面遊戲畫布 -->
-  <canvas id="gameCanvas"></canvas>
-
-  <!-- 角色與武器商店彈窗 -->
-  <div class="overlay" id="shopOverlay">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 id="modalTitle">動漫荒野獵人 · 整備室</h2>
-        <span class="money-pill" id="modalMoney">$ 0</span>
-      </div>
-
-      <div class="section-title">1. 選擇出戰動漫角色（隨時可切換）</div>
-      <div class="char-grid" id="charGrid"></div>
-
-      <div class="section-title">2. 軍火庫（狩獵動物賺錢兌換強大槍械）</div>
-      <div class="gun-list" id="gunList"></div>
-
-      <button class="btn-play" id="resumeBtn">開始狩獵 / 繼續戰鬥</button>
-    </div>
-  </div>
-
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let W = canvas.width = window.innerWidth;
-    let H = canvas.height = window.innerHeight;
-    window.addEventListener('resize', () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    });
-
-    // 動漫角色資料庫
-    const CHARACTERS = [
-      {
-        id: 'lily',
-        name: '緋紅雙馬尾・莉莉',
-        short: '莉',
-        hairColor: '#ff3b9a',
-        outfitColor: '#fff1f2',
-        speed: 4.8,
-        maxHp: 100,
-        dmgMult: 1.0,
-        perk: '移動速度 +20%\n靈活風箏走位'
-      },
-      {
-        id: 'alice',
-        name: '蒼藍狙擊・愛麗絲',
-        short: '愛',
-        hairColor: '#00d4ff',
-        outfitColor: '#e0f2fe',
-        speed: 4.0,
-        maxHp: 100,
-        dmgMult: 1.25,
-        perk: '全槍械傷害 +25%\n高爆發狩獵專家'
-      },
-      {
-        id: 'chloe',
-        name: '金髮重裝・克蘿伊',
-        short: '克',
-        hairColor: '#fbbf24',
-        outfitColor: '#fef3c7',
-        speed: 3.6,
-        maxHp: 150,
-        dmgMult: 1.05,
-        perk: '生命上限 150 HP\n耐抗動物近身撲咬'
-      }
-    ];
-
-    // 槍械資料庫（不同槍有不同射速、彈道與特殊功能）
-    const WEAPONS = [
-      {
-        id: 'pistol',
-        name: '1. 星光手槍',
-        price: 0,
-        cooldown: 16,
-        speed: 11,
-        damage: 18,
-        color: '#00f0ff',
-        type: 'single',
-        desc: '標準單發光彈，射速穩定、精準度高'
-      },
-      {
-        id: 'shotgun',
-        name: '2. 雙管霰彈槍',
-        price: 150,
-        cooldown: 34,
-        speed: 9.5,
-        damage: 14,
-        color: '#fb923c',
-        type: 'shotgun',
-        desc: '一次噴射 5 顆扇形鋼珠，貼身擊退近戰動物'
-      },
-      {
-        id: 'smg',
-        name: '3. 疾風衝鋒槍',
-        price: 350,
-        cooldown: 6,
-        speed: 12,
-        damage: 11,
-        color: '#a855f7',
-        type: 'smg',
-        desc: '超高射速連發彈幕，火力壓制狼群'
-      },
-      {
-        id: 'laser',
-        name: '4. 雷射狙擊槍',
-        price: 650,
-        cooldown: 38,
-        speed: 18,
-        damage: 55,
-        color: '#38bdf8',
-        type: 'pierce',
-        desc: '發射貫穿雷射光束，可一次穿透整排動物'
-      },
-      {
-        id: 'rocket',
-        name: '5. 爆裂火箭筒',
-        price: 1200,
-        cooldown: 48,
-        speed: 8.5,
-        damage: 85,
-        color: '#f43f5e',
-        type: 'explosive',
-        desc: '命中目標引發大範圍火焰爆炸，瞬間清場'
-      }
-    ];
-
-    // 野生動物資料庫（不同動物有不同血量、速度、近戰傷害與賞金）
-    const ANIMAL_TYPES = [
-      { id: 'rabbit', name: '疾風野兔', hp: 28, speed: 2.7, radius: 16, reward: 15, atk: 8, color: '#f8fafc', earColor: '#fda4af' },
-      { id: 'wolf',   name: '暗影森林狼', hp: 55, speed: 2.3, radius: 21, reward: 35, atk: 14, color: '#64748b', earColor: '#94a3b8' },
-      { id: 'boar',   name: '狂暴鋼牙野豬', hp: 105, speed: 1.8, radius: 26, reward: 60, atk: 22, color: '#78350f', earColor: '#b45309' },
-      { id: 'bear',   name: '巨型棕熊王', hp: 240, speed: 1.35, radius: 36, reward: 150, atk: 32, color: '#451a03', earColor: '#92400e' }
-    ];
-
-    // 路上掉落補給品資料庫（食物、水果、藥箱）
-    const PICKUP_TYPES = [
-      { id: 'apple', name: '紅蘋果', heal: 15, color: '#ef4444', icon: '🍎' },
-      { id: 'meat',  name: '香烤肉排', heal: 30, color: '#f97316', icon: '🍖' },
-      { id: 'medkit', name: '急救藥箱', heal: 60, color: '#22c55e', icon: '➕' }
-    ];
-
-    // 遊戲狀態
-    let money = 0;
-    let unlockedWeapons = ['pistol'];
-    let currentWeaponId = 'pistol';
-    let currentCharId = 'lily';
-    let isPaused = true;
-    let frameCount = 0;
-
-    const player = {
-      x: W / 2,
-      y: H / 2,
-      hp: 100,
-      maxHp: 100,
-      radius: 18,
-      aimAngle: 0,
-      fireTimer: 0,
-      invuln: 0
-    };
-
-    let bullets = [];
-    let animals = [];
-    let pickups = [];
-    let floatTexts = [];
-    let particles = [];
-    let slashEffects = [];
-    let grassDecor = [];
-
-    // 初始化草地裝飾點
-    for (let i = 0; i < 65; i++) {
-      grassDecor.push({
-        x: Math.random() * 2500,
-        y: Math.random() * 2500,
-        size: Math.random() * 6 + 3,
-        type: Math.random() > 0.3 ? 'grass' : 'flower'
-      });
-    }
-
-    function getCurrentChar() {
-      return CHARACTERS.find(c => c.id === currentCharId);
-    }
-
-    function getCurrentWeapon() {
-      return WEAPONS.find(w => w.id === currentWeaponId);
-    }
-
-    function selectCharacter(charId) {
-      const prevChar = getCurrentChar();
-      const hpRatio = player.hp / prevChar.maxHp;
-      currentCharId = charId;
-      const nextChar = getCurrentChar();
-      player.maxHp = nextChar.maxHp;
-      player.hp = Math.max(1, Math.round(nextChar.maxHp * hpRatio));
-      updateHUD();
-      renderShopUI();
-    }
-
-    function equipOrBuyWeapon(weaponId) {
-      const w = WEAPONS.find(item => item.id === weaponId);
-      if (!w) return;
-
-      if (unlockedWeapons.includes(weaponId)) {
-        currentWeaponId = weaponId;
-      } else if (money >= w.price) {
-        money -= w.price;
-        unlockedWeapons.push(weaponId);
-        currentWeaponId = weaponId;
-      }
-      updateHUD();
-      renderShopUI();
-    }
-
-    function updateHUD() {
-      const c = getCurrentChar();
-      document.getElementById('hudAvatar').textContent = c.short;
-      document.getElementById('hudAvatar').style.background = c.hairColor;
-      document.getElementById('hudCharName').textContent = c.name;
-      document.getElementById('hudHpText').textContent = `${player.hp} / ${player.maxHp}`;
-      document.getElementById('hudHpBar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
-      document.getElementById('hudMoney').textContent = `$ ${money}`;
-      document.getElementById('modalMoney').textContent = `$ ${money}`;
-
-      // 更新底部武器快捷列
-      const dock = document.getElementById('weaponDock');
-      dock.innerHTML = '';
-      WEAPONS.forEach((w, idx) => {
-        const isUnlocked = unlockedWeapons.includes(w.id);
-        const isActive = currentWeaponId === w.id;
-        const slot = document.createElement('div');
-        slot.className = `w-slot ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`;
-        slot.innerHTML = `
-          <span class="w-key">[${idx + 1}]</span>
-          <span class="w-name">${w.name.split('. ')[1]}</span>
-          <span class="w-price">${isUnlocked ? (isActive ? '裝備中' : '已擁有') : `$${w.price}`}</span>
-        `;
-        slot.onclick = () => {
-          if (isUnlocked) {
-            currentWeaponId = w.id;
-            updateHUD();
-          } else {
-            openShop();
-          }
-        };
-        dock.appendChild(slot);
-      });
-    }
-
-    function renderShopUI() {
-      const charGrid = document.getElementById('charGrid');
-      charGrid.innerHTML = '';
-      CHARACTERS.forEach(c => {
-        const card = document.createElement('div');
-        card.className = `char-card ${c.id === currentCharId ? 'active' : ''}`;
-        card.innerHTML = `
-          <span class="c-name" style="color:${c.hairColor}">${c.name}</span>
-          <span class="c-perk">${c.perk.replace('\n', '<br>')}</span>
-        `;
-        card.onclick = () => selectCharacter(c.id);
-        charGrid.appendChild(card);
-      });
-
-      const gunList = document.getElementById('gunList');
-      gunList.innerHTML = '';
-      WEAPONS.forEach(w => {
-        const isUnlocked = unlockedWeapons.includes(w.id);
-        const isEquipped = currentWeaponId === w.id;
-        const row = document.createElement('div');
-        row.className = 'gun-row';
-
-        let btnHtml = '';
-        if (isEquipped) {
-          btnHtml = `<button class="btn-action btn-equipped">使用中</button>`;
-        } else if (isUnlocked) {
-          btnHtml = `<button class="btn-action btn-equip" onclick="equipOrBuyWeapon('${w.id}')">切換裝備</button>`;
-        } else {
-          const canAfford = money >= w.price;
-          btnHtml = `<button class="btn-action btn-buy" ${canAfford ? '' : 'disabled'} onclick="equipOrBuyWeapon('${w.id}')">$${w.price} 兌換</button>`;
-        }
-
-        row.innerHTML = `
-          <div class="gun-info">
-            <h4 style="color:${w.color}">${w.name}</h4>
-            <p>${w.desc}</p>
-          </div>
-          ${btnHtml}
-        `;
-        gunList.appendChild(row);
-      });
-    }
-
-    function openShop() {
-      isPaused = true;
-      renderShopUI();
-      document.getElementById('shopOverlay').classList.remove('hidden');
-    }
-
-    function closeShop() {
-      if (player.hp <= 0) {
-        // 陣亡後重新復活
-        const c = getCurrentChar();
-        player.hp = c.maxHp;
-        player.x = W / 2;
-        player.y = H / 2;
-        animals = [];
-        bullets = [];
-        updateHUD();
-      }
-      isPaused = false;
-      document.getElementById('shopOverlay').classList.add('hidden');
-    }
-
-    document.getElementById('openShopBtn').onclick = openShop;
-    document.getElementById('resumeBtn').onclick = closeShop;
-
-    function addFloatText(x, y, text, color) {
-      floatTexts.push({ x, y, text, color, life: 45 });
-    }
-
-    function spawnParticles(x, y, color, count = 8) {
-      for (let i = 0; i < count; i++) {
-        const ang = Math.random() * Math.PI * 2;
-        const spd = Math.random() * 4 + 1;
-        particles.push({
-          x, y,
-          vx: Math.cos(ang) * spd,
-          vy: Math.sin(ang) * spd,
-          size: Math.random() * 4 + 2,
-          color,
-          life: 1
-        });
-      }
-    }
-
-    function spawnAnimal() {
-      // 從畫面四個邊緣隨機生成動物
-      const side = Math.floor(Math.random() * 4);
-      let x = 0, y = 0;
-      if (side === 0) { x = Math.random() * W; y = -40; }
-      if (side === 1) { x = W + 40; y = Math.random() * H; }
-      if (side === 2) { x = Math.random() * W; y = H + 40; }
-      if (side === 3) { x = -40; y = Math.random() * H; }
-
-      const roll = Math.random();
-      let template = ANIMAL_TYPES[0]; // 野兔
-      if (roll > 0.90) template = ANIMAL_TYPES[3]; // 巨型棕熊王
-      else if (roll > 0.72) template = ANIMAL_TYPES[2]; // 野豬
-      else if (roll > 0.42) template = ANIMAL_TYPES[1]; // 森林狼
-
-      animals.push({
-        ...template,
-        x, y,
-        maxHp: template.hp,
-        attackCooldown: 0,
-        knockbackX: 0,
-        knockbackY: 0
-      });
-    }
-
-    function spawnPickup() {
-      if (pickups.length >= 5) return;
-      const item = PICKUP_TYPES[Math.floor(Math.random() * PICKUP_TYPES.length)];
-      pickups.push({
-        ...item,
-        x: Math.random() * (W - 120) + 60,
-        y: Math.random() * (H - 160) + 80,
-        bobPhase: Math.random() * Math.PI * 2
-      });
-    }
-
-    function shoot() {
-      const w = getCurrentWeapon();
-      const c = getCurrentChar();
-      const dmg = Math.round(w.damage * c.dmgMult);
-      const muzzleX = player.x + Math.cos(player.aimAngle) * 22;
-      const muzzleY = player.y + Math.sin(player.aimAngle) * 22;
-
-      if (w.type === 'shotgun') {
-        // 霰彈槍：5 發扇形彈道 + 擊退力
-        [-0.28, -0.14, 0, 0.14, 0.28].forEach(offset => {
-          const ang = player.aimAngle + offset;
-          bullets.push({
-            x: muzzleX, y: muzzleY,
-            vx: Math.cos(ang) * w.speed,
-            vy: Math.sin(ang) * w.speed,
-            damage: dmg,
-            color: w.color,
-            radius: 4,
-            type: 'shotgun',
-            life: 26 // 射程較短但近戰極強
-          });
-        });
-      } else if (w.type === 'smg') {
-        // 衝鋒槍：高速連發帶微幅散射
-        const spread = (Math.random() - 0.5) * 0.12;
-        const ang = player.aimAngle + spread;
-        bullets.push({
-          x: muzzleX, y: muzzleY,
-          vx: Math.cos(ang) * w.speed,
-          vy: Math.sin(ang) * w.speed,
-          damage: dmg,
-          color: w.color,
-          radius: 4,
-          type: 'smg',
-          life: 65
-        });
-      } else if (w.type === 'pierce') {
-        // 雷射狙擊槍：可貫穿多個敵人
-        bullets.push({
-          x: muzzleX, y: muzzleY,
-          vx: Math.cos(player.aimAngle) * w.speed,
-          vy: Math.sin(player.aimAngle) * w.speed,
-          damage: dmg,
-          color: w.color,
-          radius: 6,
-          type: 'pierce',
-          hitList: [],
-          life: 70
-        });
-      } else if (w.type === 'explosive') {
-        // 火箭筒：大範圍爆炸
-        bullets.push({
-          x: muzzleX, y: muzzleY,
-          vx: Math.cos(player.aimAngle) * w.speed,
-          vy: Math.sin(player.aimAngle) * w.speed,
-          damage: dmg,
-          color: w.color,
-          radius: 8,
-          type: 'explosive',
-          life: 80
-        });
-      } else {
-        // 初始手槍
-        bullets.push({
-          x: muzzleX, y: muzzleY,
-          vx: Math.cos(player.aimAngle) * w.speed,
-          vy: Math.sin(player.aimAngle) * w.speed,
-          damage: dmg,
-          color: w.color,
-          radius: 5,
-          type: 'single',
-          life: 70
-        });
-      }
-    }
-
-    // 繪製動漫 Q 版獵人角色與手持槍械
-    function drawAnimeHunter() {
-      const c = getCurrentChar();
-      const w = getCurrentWeapon();
-
-      ctx.save();
-      ctx.translate(player.x, player.y);
-
-      if (player.invuln > 0 && Math.floor(frameCount / 4) % 2 === 0) {
-        ctx.globalAlpha = 0.5;
-      }
-
-      // 腳底光環
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-      ctx.beginPath();
-      ctx.ellipse(0, 16, 16, 7, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 角色雙馬尾 / 長髮飄動
-      const sway = Math.sin(frameCount * 0.14) * 3;
-      ctx.fillStyle = c.hairColor;
-      ctx.beginPath();
-      ctx.arc(-13, -4 + sway, 7, 0, Math.PI * 2);
-      ctx.arc(13, -4 - sway, 7, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 角色身體（動漫披風與服裝）
-      ctx.fillStyle = c.outfitColor;
-      ctx.beginPath();
-      ctx.roundRect(-11, -4, 22, 20, 8);
-      ctx.fill();
-
-      // 角色頭部與頭髮
-      ctx.fillStyle = '#fde68a';
-      ctx.beginPath();
-      ctx.arc(0, -10, 12, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = c.hairColor;
-      ctx.beginPath();
-      ctx.arc(0, -13, 12.5, Math.PI, Math.PI * 2);
-      ctx.fill();
-
-      // 動漫大眼睛（朝向瞄準方向微移）
-      const lookX = Math.cos(player.aimAngle) * 3;
-      const lookY = Math.sin(player.aimAngle) * 2;
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath();
-      ctx.arc(-4 + lookX, -9 + lookY, 2.2, 0, Math.PI * 2);
-      ctx.arc(4 + lookX, -9 + lookY, 2.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 手持槍械（隨滑鼠角度旋轉）
-      ctx.rotate(player.aimAngle);
-      ctx.fillStyle = '#1e293b';
-      ctx.strokeStyle = w.color;
-      ctx.lineWidth = 2;
-      const gunLen = w.type === 'pierce' || w.type === 'rocket' ? 28 : 20;
-      ctx.beginPath();
-      ctx.roundRect(6, -4, gunLen, 8, 3);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    // 繪製野生動物與血條
-    function drawAnimal(a) {
-      ctx.save();
-      ctx.translate(a.x, a.y);
-
-      // 腳底陰影
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.beginPath();
-      ctx.ellipse(0, a.radius * 0.85, a.radius * 0.9, a.radius * 0.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 耳朵
-      ctx.fillStyle = a.earColor;
-      const earH = a.id === 'rabbit' ? 14 : 8;
-      ctx.beginPath();
-      ctx.ellipse(-a.radius * 0.45, -a.radius * 0.8, 4, earH, -0.2, 0, Math.PI * 2);
-      ctx.ellipse(a.radius * 0.45, -a.radius * 0.8, 4, earH, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 身體圓形
-      ctx.fillStyle = a.color;
-      ctx.beginPath();
-      ctx.arc(0, 0, a.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 發紅光的兇猛眼睛（準備近戰攻擊）
-      ctx.fillStyle = '#ef4444';
-      ctx.beginPath();
-      ctx.arc(-a.radius * 0.32, -a.radius * 0.15, 3, 0, Math.PI * 2);
-      ctx.arc(a.radius * 0.32, -a.radius * 0.15, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 動物名稱與血條
-      const hpRatio = Math.max(0, a.hp / a.maxHp);
-      const barW = a.radius * 2;
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(-barW / 2, -a.radius - 14, barW, 5);
-      ctx.fillStyle = hpRatio > 0.4 ? '#22c55e' : '#ef4444';
-      ctx.fillRect(-barW / 2, -a.radius - 14, barW * hpRatio, 5);
-
-      ctx.restore();
-    }
-
-    // 輸入控制
-    const keys = {};
-    let isMouseDown = false;
-    let isTouching = false;
-
-    window.addEventListener('keydown', e => {
-      keys[e.code] = true;
-      if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].includes(e.code)) {
-        const idx = Number(e.code.replace('Digit', '')) - 1;
-        if (WEAPONS[idx] && unlockedWeapons.includes(WEAPONS[idx].id)) {
-          currentWeaponId = WEAPONS[idx].id;
-          updateHUD();
-        }
-      }
-    });
-    window.addEventListener('keyup', e => keys[e.code] = false);
-
-    canvas.addEventListener('mousemove', e => {
-      player.aimAngle = Math.atan2(e.clientY - player.y, e.clientX - player.x);
-    });
-    canvas.addEventListener('mousedown', e => {
-      if (e.button === 0) isMouseDown = true;
-    });
-    window.addEventListener('mouseup', () => isMouseDown = false);
-
-    // 手機觸控：拖曳移動並自動鎖定最近動物射擊
-    let touchTarget = null;
-    canvas.addEventListener('touchstart', e => {
-      isTouching = true;
-      const t = e.touches[0];
-      touchTarget = { x: t.clientX, y: t.clientY };
-    }, { passive: true });
-    canvas.addEventListener('touchmove', e => {
-      const t = e.touches[0];
-      touchTarget = { x: t.clientX, y: t.clientY };
-    }, { passive: true });
-    canvas.addEventListener('touchend', () => {
-      isTouching = false;
-      touchTarget = null;
-    });
-
-    function gameLoop() {
-      // 繪製荒野草地背景
-      ctx.fillStyle = '#14261c';
-      ctx.fillRect(0, 0, W, H);
-
-      // 草叢與野花細節
-      grassDecor.forEach(g => {
-        const gx = g.x % W;
-        const gy = g.y % H;
-        ctx.fillStyle = g.type === 'grass' ? '#1c3628' : 'rgba(255, 182, 193, 0.35)';
-        ctx.beginPath();
-        ctx.arc(gx, gy, g.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      if (!isPaused) {
-        frameCount++;
-        const char = getCurrentChar();
-        const weapon = getCurrentWeapon();
-
-        // 1. 角色移動控制
-        let moveX = 0, moveY = 0;
-        if (keys['KeyW'] || keys['ArrowUp']) moveY -= 1;
-        if (keys['KeyS'] || keys['ArrowDown']) moveY += 1;
-        if (keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
-        if (keys['KeyD'] || keys['ArrowRight']) moveX += 1;
-
-        if (moveX !== 0 || moveY !== 0) {
-          const len = Math.hypot(moveX, moveY);
-          player.x += (moveX / len) * char.speed;
-          player.y += (moveY / len) * char.speed;
-        } else if (isTouching && touchTarget) {
-          const dx = touchTarget.x - player.x;
-          const dy = touchTarget.y - player.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist > 8) {
-            player.x += (dx / dist) * char.speed;
-            player.y += (dy / dist) * char.speed;
-          }
-        }
-
-        player.x = Math.max(24, Math.min(W - 24, player.x));
-        player.y = Math.max(64, Math.min(H - 85, player.y));
-
-        if (player.invuln > 0) player.invuln--;
-
-        // 手機觸控時自動瞄準最近的動物
-        if (isTouching && animals.length > 0) {
-          let nearest = animals[0];
-          let minD = Infinity;
-          animals.forEach(a => {
-            const d = Math.hypot(a.x - player.x, a.y - player.y);
-            if (d < minD) { minD = d; nearest = a; }
-          });
-          player.aimAngle = Math.atan2(nearest.y - player.y, nearest.x - player.x);
-        }
-
-        // 2. 射擊控制
-        if (player.fireTimer > 0) player.fireTimer--;
-        if ((isMouseDown || isTouching) && player.fireTimer <= 0) {
-          shoot();
-          player.fireTimer = weapon.cooldown;
-        }
-
-        // 3. 定期生成野生動物與路上補給品
-        if (frameCount % 75 === 0 && animals.length < 18) spawnAnimal();
-        if (frameCount % 260 === 0) spawnPickup();
-      }
-
-      // 4. 更新與繪製路上補給（食物、水果、藥箱）
-      for (let i = pickups.length - 1; i >= 0; i--) {
-        const p = pickups[i];
-        p.bobPhase += 0.08;
-        const offsetY = Math.sin(p.bobPhase) * 4;
-
-        // 發光底圈
-        ctx.save();
-        ctx.fillStyle = 'rgba(34, 197, 94, 0.22)';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y + offsetY, 18, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.font = '22px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(p.icon, p.x, p.y + offsetY);
-        ctx.restore();
-
-        // 玩家撿取補給
-        if (!isPaused && Math.hypot(player.x - p.x, player.y - p.y) < player.radius + 18) {
-          const healed = Math.min(player.maxHp - player.hp, p.heal);
-          player.hp = Math.min(player.maxHp, player.hp + p.heal);
-          addFloatText(player.x, player.y - 24, `${p.name} +${healed > 0 ? healed : p.heal} HP`, '#4ade80');
-          spawnParticles(p.x, p.y, '#4ade80', 10);
-          updateHUD();
-          pickups.splice(i, 1);
-        }
-      }
-
-      // 5. 更新與繪製子彈
-      for (let i = bullets.length - 1; i >= 0; i--) {
-        const b = bullets[i];
-        if (!isPaused) {
-          b.x += b.vx;
-          b.y += b.vy;
-          b.life--;
-        }
-
-        ctx.save();
-        ctx.shadowColor = b.color;
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = b.type === 'pierce' ? '#fff' : b.color;
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        if (b.life <= 0 || b.x < -50 || b.x > W + 50 || b.y < -50 || b.y > H + 50) {
-          bullets.splice(i, 1);
-          continue;
-        }
-
-        // 子彈命中動物判定
-        if (!isPaused) {
-          for (let j = animals.length - 1; j >= 0; j--) {
-            const a = animals[j];
-            if (b.type === 'pierce' && b.hitList.includes(a)) continue;
-
-            if (Math.hypot(b.x - a.x, b.y - a.y) < a.radius + b.radius) {
-              if (b.type === 'explosive') {
-                // 火箭筒範圍爆炸
-                spawnParticles(b.x, b.y, '#f43f5e', 22);
-                animals.forEach(target => {
-                  if (Math.hypot(b.x - target.x, b.y - target.y) < 110) {
-                    target.hp -= b.damage;
-                    addFloatText(target.x, target.y - 15, `-${b.damage}`, '#fb7185');
-                  }
-                });
-                bullets.splice(i, 1);
-                break;
-              } else {
-                a.hp -= b.damage;
-                addFloatText(a.x, a.y - 15, `-${b.damage}`, '#fff');
-                spawnParticles(b.x, b.y, b.color, 5);
-
-                // 霰彈槍近距離擊退效果
-                if (b.type === 'shotgun') {
-                  const pushAng = Math.atan2(a.y - player.y, a.x - player.x);
-                  a.knockbackX = Math.cos(pushAng) * 7;
-                  a.knockbackY = Math.sin(pushAng) * 7;
-                }
-
-                if (b.type === 'pierce') {
-                  b.hitList.push(a);
-                } else {
-                  bullets.splice(i, 1);
-                }
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      // 6. 更新與繪製動物（追蹤玩家並近身攻擊）
-      for (let i = animals.length - 1; i >= 0; i--) {
-        const a = animals[i];
-
-        // 檢查動物是否被擊殺
-        if (a.hp <= 0) {
-          money += a.reward;
-          addFloatText(a.x, a.y - 20, `+$${a.reward} (${a.name})`, '#ffd700');
-          spawnParticles(a.x, a.y, '#ffd700', 14);
-          updateHUD();
-          animals.splice(i, 1);
-          continue;
-        }
-
-        if (!isPaused) {
-          const ang = Math.atan2(player.y - a.y, player.x - a.x);
-          const dist = Math.hypot(player.x - a.x, player.y - a.y);
-
-          // 應用擊退位移
-          a.x += a.knockbackX;
-          a.y += a.knockbackY;
-          a.knockbackX *= 0.8;
-          a.knockbackY *= 0.8;
-
-          if (dist > a.radius + player.radius - 4) {
-            a.x += Math.cos(ang) * a.speed;
-            a.y += Math.sin(ang) * a.speed;
-          } else {
-            // 近身撲咬攻擊玩家角色！
-            if (a.attackCooldown <= 0) {
-              a.attackCooldown = 48; // 約 0.8 秒咬一次
-              slashEffects.push({ x: player.x, y: player.y, life: 12 });
-              if (player.invuln <= 0) {
-                player.hp = Math.max(0, player.hp - a.atk);
-                player.invuln = 25;
-                addFloatText(player.x, player.y - 28, `-${a.atk} HP!`, '#ef4444');
-                spawnParticles(player.x, player.y, '#ef4444', 10);
-                updateHUD();
-
-                if (player.hp <= 0) {
-                  document.getElementById('modalTitle').textContent = '獵人重傷倒下！調整裝備再出發';
-                  openShop();
-                }
-              }
-            }
-          }
-          if (a.attackCooldown > 0) a.attackCooldown--;
-        }
-
-        drawAnimal(a);
-      }
-
-      // 7. 繪製玩家獵人
-      drawAnimeHunter();
-
-      // 8. 繪製動物近戰爪擊特效
-      for (let i = slashEffects.length - 1; i >= 0; i--) {
-        const s = slashEffects[i];
-        ctx.save();
-        ctx.strokeStyle = `rgba(239, 68, 68, ${s.life / 12})`;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(s.x - 16, s.y - 16);
-        ctx.lineTo(s.x + 16, s.y + 16);
-        ctx.moveTo(s.x + 16, s.y - 16);
-        ctx.lineTo(s.x - 16, s.y + 16);
-        ctx.stroke();
-        ctx.restore();
-        s.life--;
-        if (s.life <= 0) slashEffects.splice(i, 1);
-      }
-
-      // 9. 繪製粒子與浮動傷害/金幣文字
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const pt = particles[i];
-        pt.x += pt.vx;
-        pt.y += pt.vy;
-        pt.life -= 0.035;
-        if (pt.life <= 0) { particles.splice(i, 1); continue; }
-        ctx.save();
-        ctx.globalAlpha = pt.life;
-        ctx.fillStyle = pt.color;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      for (let i = floatTexts.length - 1; i >= 0; i--) {
-        const ft = floatTexts[i];
-        ft.y -= 0.9;
-        ft.life--;
-        if (ft.life <= 0) { floatTexts.splice(i, 1); continue; }
-        ctx.save();
-        ctx.globalAlpha = Math.min(1, ft.life / 15);
-        ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = ft.color;
-        ctx.fillText(ft.text, ft.x, ft.y);
-        ctx.restore();
-      }
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    // 初始化介面並啟動
-    updateHUD();
-    renderShopUI();
-    requestAnimationFrame(gameLoop);
-  </script>
-</body>
-</html>
+    .online-box {
+      background: rgba
