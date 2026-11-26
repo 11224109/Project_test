@@ -1,6 +1,8 @@
 
     const canvas = document.getElementById('boardCanvas');
     const ctx = canvas.getContext('2d');
+    const homeScreen = document.getElementById('homeScreen');
+    const appContainer = document.querySelector('.app-container');
 
     const gameBtns = document.querySelectorAll('.game-btn');
     const tabAI = document.getElementById('tabAI');
@@ -938,6 +940,21 @@
     aiDifficultySelect.onchange = initGame;
     playerColorSelect.onchange = initGame;
 
+    function enterArena(gameId, mode) {
+      homeScreen.classList.add('hidden');
+      appContainer.classList.remove('hidden');
+      (mode === 'online' ? tabOnline : tabAI).click();
+
+      const gameButton = Array.from(gameBtns).find(button => button.dataset.game === gameId);
+      if (gameButton && !gameButton.classList.contains('active')) gameButton.click();
+    }
+
+    document.getElementById('startSoloBtn').onclick = () => enterArena('gomoku', 'ai');
+    document.getElementById('startOnlineBtn').onclick = () => enterArena('gomoku', 'online');
+    document.querySelectorAll('[data-home-game]').forEach(button => {
+      button.onclick = () => enterArena(button.dataset.homeGame, 'ai');
+    });
+
     gameBtns.forEach(btn => {
       btn.onclick = () => {
         if (gameMode === 'online' && conn && conn.open && !isRoomHost) {
@@ -1033,6 +1050,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       const roomParam = new URLSearchParams(window.location.search).get('room');
       if (roomParam) {
+        homeScreen.classList.add('hidden');
+        appContainer.classList.remove('hidden');
         tabOnline.click();
         joinRoomInput.value = roomParam;
         joinRoom(roomParam);

@@ -9,7 +9,91 @@
 </head>
 <body>
 
-  <div class="app-container">
+  <section class="home-screen" id="homeScreen">
+    <header class="home-header">
+      <a class="home-brand" href="#" aria-label="棋聚主畫面">
+        <span class="home-brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="home-brand-name">棋聚 <small>BOARD GAME ARENA</small></span>
+      </a>
+      <span class="home-status"><span></span> 免費遊玩・無需安裝</span>
+    </header>
+
+    <main class="home-main">
+      <section class="home-hero">
+        <div class="home-hero-copy">
+          <p class="home-eyebrow"><span></span> 思考・佈局・享受對弈</p>
+          <h1>把每一步，<br /><span>走成精彩。</span></h1>
+          <p class="home-intro">和 AI 磨練策略，或邀請朋友在線交手。四款棋類，隨時開局。</p>
+          <div class="home-actions">
+            <button type="button" class="home-primary" id="startSoloBtn">開始單人對戰 <span aria-hidden="true">→</span></button>
+            <button type="button" class="home-secondary" id="startOnlineBtn"><span aria-hidden="true">◎</span> 與朋友連線</button>
+          </div>
+          <p class="home-note"><span aria-hidden="true">✦</span> 不用下載，打開就能玩</p>
+        </div>
+
+        <div class="home-visual" aria-hidden="true">
+          <div class="home-visual-label">YOUR NEXT MOVE</div>
+          <div class="home-board-art">
+            <span class="home-stone home-stone-1"></span>
+            <span class="home-stone home-stone-2"></span>
+            <span class="home-stone home-stone-3"></span>
+            <span class="home-stone home-stone-4"></span>
+            <span class="home-stone home-stone-5"></span>
+            <span class="home-stone home-stone-6"></span>
+            <span class="home-stone home-stone-7"></span>
+            <span class="home-stone home-stone-8"></span>
+            <span class="home-stone home-stone-9"></span>
+          </div>
+          <div class="home-float-card">
+            <span class="home-float-icon">♟</span>
+            <span><strong>輪到你了</strong><small>下一步，由你決定</small></span>
+            <span class="home-float-dot"></span>
+          </div>
+          <span class="home-spark home-spark-one">✦</span>
+          <span class="home-spark home-spark-two">✧</span>
+        </div>
+      </section>
+
+      <section class="home-games" aria-labelledby="homeGamesTitle">
+        <div class="home-section-heading">
+          <div>
+            <p class="home-eyebrow">PICK YOUR GAME</p>
+            <h2 id="homeGamesTitle">今天想玩哪一款？</h2>
+          </div>
+          <span class="home-games-hint">點選遊戲即可開始 <span aria-hidden="true">↗</span></span>
+        </div>
+        <div class="home-game-grid">
+          <button type="button" class="home-game-card" data-home-game="gomoku">
+            <span class="home-game-icon icon-gomoku" aria-hidden="true">●</span>
+            <span class="home-game-copy"><strong>五子棋</strong><small>連成五子，搶先獲勝</small></span>
+            <span class="home-game-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button type="button" class="home-game-card" data-home-game="tictactoe">
+            <span class="home-game-icon icon-tictactoe" aria-hidden="true">X O</span>
+            <span class="home-game-copy"><strong>井字棋</strong><small>經典九宮格，快速對決</small></span>
+            <span class="home-game-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button type="button" class="home-game-card" data-home-game="othello">
+            <span class="home-game-icon icon-othello" aria-hidden="true">◉</span>
+            <span class="home-game-copy"><strong>黑白棋</strong><small>翻轉棋子，掌控棋盤</small></span>
+            <span class="home-game-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button type="button" class="home-game-card" data-home-game="watermelon">
+            <span class="home-game-icon icon-watermelon" aria-hidden="true">🍉</span>
+            <span class="home-game-copy"><strong>西瓜棋</strong><small>圍堵對手，趣味攻防</small></span>
+            <span class="home-game-arrow" aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </section>
+
+      <footer class="home-footer">
+        <span>棋聚 BOARD GAME ARENA</span>
+        <span>好棋友，來一局。</span>
+      </footer>
+    </main>
+  </section>
+
+  <div class="app-container hidden">
     <!-- 左側設定與開房面板 -->
     <aside class="sidebar">
       <div class="brand">
