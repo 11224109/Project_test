@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>STARLIGHT VALKYRIE | 星光女武神</title>
+  <title>ANIME WILD HUNTER | 動漫荒野槍手</title>
   <style>
     :root {
-      --bg-deep: #070514;
+      --bg-grass: #14261c;
       --anime-pink: #ff3b9a;
       --anime-cyan: #00f0ff;
-      --anime-purple: #a855f7;
       --anime-gold: #ffd700;
-      --glass-bg: rgba(15, 11, 38, 0.72);
+      --anime-green: #22c55e;
+      --glass-bg: rgba(14, 22, 20, 0.78);
       --glass-border: rgba(255, 255, 255, 0.16);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
@@ -29,7 +29,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: var(--bg-deep);
+      background-color: var(--bg-grass);
       font-family: 'Segoe UI', 'Microsoft JhengHei', system-ui, sans-serif;
       color: var(--text-main);
     }
@@ -41,481 +41,403 @@
       cursor: crosshair;
     }
 
-    /* 頂部全畫面 HUD 狀態列 */
+    /* 頂部狀態列 */
     .hud-top {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      padding: 14px 20px;
+      padding: 12px 18px;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       pointer-events: none;
       z-index: 10;
+      gap: 10px;
     }
 
     .hud-left {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      pointer-events: auto;
     }
 
-    .char-badge {
-      display: inline-flex;
+    .player-card {
+      display: flex;
       align-items: center;
       gap: 10px;
       background: var(--glass-bg);
       backdrop-filter: blur(10px);
       border: 1px solid var(--glass-border);
       padding: 8px 14px;
-      border-radius: 999px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     }
 
-    .char-avatar {
-      width: 28px;
-      height: 28px;
+    .avatar-dot {
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--anime-pink), var(--anime-purple));
       display: flex;
       justify-content: center;
       align-items: center;
       font-weight: 900;
-      font-size: 0.85rem;
-      box-shadow: 0 0 10px var(--anime-pink);
+      font-size: 0.95rem;
+      color: #fff;
+      border: 2px solid #fff;
     }
 
-    .hp-bars {
+    .hp-section {
       display: flex;
-      gap: 5px;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 135px;
     }
 
-    .heart {
-      color: var(--anime-pink);
-      font-size: 1.1rem;
-      text-shadow: 0 0 8px var(--anime-pink);
-      transition: transform 0.2s, opacity 0.2s;
-    }
-
-    .heart.lost {
-      opacity: 0.2;
-      transform: scale(0.8);
-      text-shadow: none;
-    }
-
-    /* 必殺技能量條 */
-    .ult-bar-wrap {
-      background: var(--glass-bg);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--glass-border);
-      border-radius: 999px;
-      padding: 4px 10px;
-      width: 190px;
+    .char-name-row {
       display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .ult-label {
-      font-size: 0.68rem;
+      justify-content: space-between;
+      font-size: 0.78rem;
       font-weight: 800;
-      color: var(--anime-cyan);
-      letter-spacing: 0.5px;
-      white-space: nowrap;
     }
 
-    .ult-track {
-      flex: 1;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.1);
+    .hp-bar-bg {
+      width: 100%;
+      height: 9px;
+      background: rgba(255, 255, 255, 0.14);
       border-radius: 999px;
       overflow: hidden;
     }
 
-    .ult-fill {
+    .hp-bar-fill {
       height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--anime-cyan), var(--anime-pink));
-      box-shadow: 0 0 10px var(--anime-cyan);
+      width: 100%;
+      background: linear-gradient(90deg, #ef4444, #22c55e);
       transition: width 0.15s ease;
     }
 
     .hud-right {
       display: flex;
-      gap: 10px;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .money-pill {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255, 215, 0, 0.45);
+      padding: 8px 14px;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--anime-gold);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
       font-variant-numeric: tabular-nums;
     }
 
-    .stat-pill {
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border);
-      padding: 6px 14px;
+    .menu-btn {
+      background: linear-gradient(135deg, var(--anime-pink), #9333ea);
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
       border-radius: 14px;
-      text-align: right;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .stat-label {
-      display: block;
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-    }
-
-    .stat-val {
-      font-size: 1.15rem;
+      font-size: 0.85rem;
       font-weight: 800;
-      color: var(--anime-cyan);
-    }
-
-    .stat-val.lvl { color: var(--anime-gold); }
-    .stat-val.best { color: var(--anime-pink); }
-
-    /* 連擊數浮動顯示 */
-    .combo-display {
-      position: fixed;
-      right: 24px;
-      top: 86px;
-      text-align: right;
-      pointer-events: none;
-      opacity: 0;
-      transform: scale(0.85);
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 10;
-    }
-
-    .combo-display.active {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .combo-num {
-      font-size: 2rem;
-      font-weight: 900;
-      font-style: italic;
-      background: linear-gradient(180deg, #fff, var(--anime-gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
-    }
-
-    .combo-text {
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      color: var(--anime-pink);
-    }
-
-    /* 升級與警報橫幅 */
-    .cutin-banner {
-      position: fixed;
-      top: 24%;
-      left: 0;
-      right: 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 59, 154, 0.85), rgba(168, 85, 247, 0.85), transparent);
-      padding: 12px 0;
-      text-align: center;
-      font-size: 1.35rem;
-      font-weight: 900;
-      letter-spacing: 3px;
-      color: #fff;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-      transform: scaleY(0);
-      opacity: 0;
-      pointer-events: none;
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
-      z-index: 15;
-    }
-
-    .cutin-banner.show {
-      transform: scaleY(1);
-      opacity: 1;
-    }
-
-    /* 右下角大招按鈕（手機/滑鼠皆可點） */
-    .ult-btn {
-      position: fixed;
-      right: 24px;
-      bottom: 24px;
-      width: 74px;
-      height: 74px;
-      border-radius: 50%;
-      background: rgba(15, 11, 38, 0.8);
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      color: var(--text-muted);
-      font-size: 0.78rem;
-      font-weight: 900;
-      letter-spacing: 1px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      cursor: not-allowed;
-      z-index: 12;
-      transition: all 0.2s ease;
-    }
-
-    .ult-btn.ready {
-      background: radial-gradient(circle, var(--anime-pink), var(--anime-purple));
-      border-color: #fff;
-      color: #fff;
       cursor: pointer;
-      box-shadow: 0 0 25px var(--anime-pink), 0 0 45px rgba(0, 240, 255, 0.4);
-      animation: pulseUlt 1.2s infinite;
+      box-shadow: 0 4px 15px rgba(255, 59, 154, 0.4);
+      transition: transform 0.1s;
     }
 
-    @keyframes pulseUlt {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
+    .menu-btn:active {
+      transform: scale(0.95);
     }
 
-    /* 全畫面開始與結算面板 */
+    /* 底部武器快捷切換列 */
+    .weapon-dock {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      padding: 8px 12px;
+      border-radius: 20px;
+      z-index: 12;
+      max-width: 95vw;
+      overflow-x: auto;
+    }
+
+    .w-slot {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 6px 10px;
+      min-width: 74px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.15s;
+    }
+
+    .w-slot.locked {
+      opacity: 0.45;
+    }
+
+    .w-slot.active {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--anime-cyan);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+    }
+
+    .w-key {
+      font-size: 0.65rem;
+      color: var(--anime-cyan);
+      font-weight: 800;
+      display: block;
+    }
+
+    .w-name {
+      font-size: 0.76rem;
+      font-weight: 700;
+      display: block;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    .w-price {
+      font-size: 0.65rem;
+      color: var(--anime-gold);
+      display: block;
+    }
+
+    /* 手機虛擬搖桿提示與大招/射擊輔助 */
+    .mobile-hint {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.55);
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 9;
+    }
+
+    /* 角色與軍火庫彈窗 */
     .overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(22, 14, 54, 0.82), rgba(7, 5, 20, 0.94));
+      background: rgba(6, 12, 10, 0.86);
       backdrop-filter: blur(8px);
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 16px;
       z-index: 30;
-      transition: opacity 0.3s ease;
     }
 
     .overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
+      display: none;
     }
 
-    .modal-card {
-      background: rgba(19, 14, 46, 0.9);
-      border: 1.5px solid rgba(255, 59, 154, 0.45);
-      border-radius: 28px;
-      padding: 32px 28px;
+    .modal-box {
+      background: #111c19;
+      border: 1.5px solid rgba(0, 240, 255, 0.35);
+      border-radius: 24px;
+      padding: 22px;
       width: 100%;
-      max-width: 440px;
-      text-align: center;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 59, 154, 0.2);
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
     }
 
-    .sub-tag {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 2px;
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.3rem;
       color: var(--anime-cyan);
-      background: rgba(0, 240, 255, 0.12);
-      border: 1px solid rgba(0, 240, 255, 0.35);
-      padding: 4px 12px;
-      border-radius: 999px;
-      margin-bottom: 10px;
     }
 
-    .modal-card h1 {
-      margin: 0 0 8px;
-      font-size: 1.9rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, #fff 10%, var(--anime-pink) 60%, var(--anime-cyan) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1.5px;
-    }
-
-    .modal-desc {
-      margin: 0 0 22px;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .picker-title {
-      font-size: 0.78rem;
+    .section-title {
+      font-size: 0.82rem;
       font-weight: 800;
-      color: var(--anime-gold);
-      letter-spacing: 1px;
-      margin-bottom: 10px;
+      color: var(--anime-pink);
+      margin: 14px 0 8px;
+      letter-spacing: 0.5px;
     }
 
-    .level-grid {
+    .char-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 24px;
+      gap: 8px;
     }
 
-    .lvl-btn {
+    .char-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1.5px solid rgba(255, 255, 255, 0.14);
       border-radius: 14px;
-      padding: 10px 6px;
-      color: var(--text-main);
+      padding: 10px 8px;
+      text-align: center;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.15s;
     }
 
-    .lvl-btn .num {
-      display: block;
-      font-size: 0.95rem;
-      font-weight: 900;
+    .char-card.active {
+      border-color: var(--anime-pink);
+      background: rgba(255, 59, 154, 0.16);
+      box-shadow: 0 0 14px rgba(255, 59, 154, 0.35);
     }
 
-    .lvl-btn .desc {
+    .char-card .c-name {
+      font-size: 0.85rem;
+      font-weight: 800;
       display: block;
+      margin-bottom: 4px;
+    }
+
+    .char-card .c-perk {
       font-size: 0.68rem;
       color: var(--text-muted);
-      margin-top: 3px;
+      line-height: 1.35;
     }
 
-    .lvl-btn:hover {
-      border-color: var(--anime-pink);
-      transform: translateY(-2px);
+    .gun-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .lvl-btn.active {
-      background: linear-gradient(135deg, rgba(255, 59, 154, 0.25), rgba(168, 85, 247, 0.25));
-      border-color: var(--anime-pink);
-      box-shadow: 0 0 16px rgba(255, 59, 154, 0.4);
+    .gun-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 10px 14px;
+      gap: 10px;
     }
 
-    .lvl-btn.active .num {
+    .gun-info h4 {
+      margin: 0 0 3px;
+      font-size: 0.9rem;
       color: #fff;
     }
 
-    .lvl-btn.active .desc {
-      color: #fbcfe8;
+    .gun-info p {
+      margin: 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
     }
 
-    .btn-launch {
+    .btn-action {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-buy {
+      background: var(--anime-gold);
+      color: #111;
+    }
+
+    .btn-buy:disabled {
+      background: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    .btn-equip {
+      background: var(--anime-cyan);
+      color: #091316;
+    }
+
+    .btn-equipped {
+      background: rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+      border: 1px solid #4ade80;
+      cursor: default;
+    }
+
+    .btn-play {
       width: 100%;
-      background: linear-gradient(135deg, var(--anime-pink), var(--anime-purple));
+      margin-top: 18px;
+      background: linear-gradient(135deg, var(--anime-pink), #7e22ce);
       color: #fff;
       border: none;
-      padding: 14px 24px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
+      padding: 13px;
       border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 8px 25px rgba(255, 59, 154, 0.45);
-      transition: transform 0.12s ease, box-shadow 0.12s ease;
-    }
-
-    .btn-launch:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(255, 59, 154, 0.65);
-    }
-
-    .btn-launch:active {
-      transform: scale(0.97);
-    }
-
-    .controls-tip {
-      margin-top: 16px;
-      font-size: 0.76rem;
-      color: var(--text-muted);
+      box-shadow: 0 6px 20px rgba(255, 59, 154, 0.45);
     }
   </style>
 </head>
 <body>
 
-  <!-- 頂部狀態列 -->
+  <!-- 頂部 HUD -->
   <div class="hud-top">
     <div class="hud-left">
-      <div class="char-badge">
-        <div class="char-avatar">★</div>
-        <div class="hp-bars" id="hpBars">
-          <span class="heart">♥</span>
-          <span class="heart">♥</span>
-          <span class="heart">♥</span>
-          <span class="heart">♥</span>
-          <span class="heart">♥</span>
-        </div>
-      </div>
-      <div class="ult-bar-wrap">
-        <span class="ult-label">STAR BURST</span>
-        <div class="ult-track">
-          <div class="ult-fill" id="ultFill"></div>
+      <div class="player-card">
+        <div class="avatar-dot" id="hudAvatar" style="background:#ff3b9a;">莉</div>
+        <div class="hp-section">
+          <div class="char-name-row">
+            <span id="hudCharName">緋紅雙馬尾・莉莉</span>
+            <span id="hudHpText">100 / 100</span>
+          </div>
+          <div class="hp-bar-bg">
+            <div class="hp-bar-fill" id="hudHpBar"></div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="hud-right">
-      <div class="stat-pill">
-        <span class="stat-label">STAGE</span>
-        <span class="stat-val lvl" id="levelDisplay">LV 1</span>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-label">SCORE</span>
-        <span class="stat-val" id="scoreDisplay">0</span>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-label">BEST</span>
-        <span class="stat-val best" id="bestDisplay">0</span>
-      </div>
+      <div class="money-pill" id="hudMoney">$ 0</div>
+      <button class="menu-btn" id="openShopBtn">角色 / 軍火庫</button>
     </div>
   </div>
 
-  <!-- 連擊提示 -->
-  <div class="combo-display" id="comboBox">
-    <div class="combo-num" id="comboNum">0</div>
-    <div class="combo-text">COMBO HIT</div>
-  </div>
+  <div class="mobile-hint">WASD / 方向鍵移動 · 滑鼠瞄準按住射擊（手機拖曳自動開火） · 數字鍵 1~5 換槍</div>
 
-  <!-- 動漫風格過場橫幅 -->
-  <div class="cutin-banner" id="cutinBanner">STAGE UP! 星光火力解放</div>
-
-  <!-- 右下角必殺技按鈕 -->
-  <button class="ult-btn" id="ultBtn" title="空白鍵或點擊釋放星爆大招">
-    <span>STAR</span>
-    <span>BURST</span>
-  </button>
+  <!-- 底部武器快捷列 -->
+  <div class="weapon-dock" id="weaponDock"></div>
 
   <!-- 全畫面遊戲畫布 -->
   <canvas id="gameCanvas"></canvas>
 
-  <!-- 開始 / 結算全畫面覆蓋層 -->
-  <div class="overlay" id="overlay">
-    <div class="modal-card">
-      <div class="sub-tag">ANIME BULLET SHOOTER</div>
-      <h1 id="modalTitle">星光女武神</h1>
-      <p class="modal-desc" id="modalDesc">
-        駕馭星辰魔導翼擊破暗影機甲！<br>
-        每得 500 分自動晉級，火力與敵軍速度同步提升
-      </p>
-
-      <div class="picker-title">選擇出擊關卡（速度與彈幕難度）</div>
-      <div class="level-grid" id="levelGrid">
-        <button type="button" class="lvl-btn active" data-lvl="1">
-          <span class="num">STAGE 1</span>
-          <span class="desc">星屑巡航 · 慢速</span>
-        </button>
-        <button type="button" class="lvl-btn" data-lvl="2">
-          <span class="num">STAGE 2</span>
-          <span class="desc">流光疾風 · 輕快</span>
-        </button>
-        <button type="button" class="lvl-btn" data-lvl="3">
-          <span class="num">STAGE 3</span>
-          <span class="desc">蒼穹交鋒 · 中速</span>
-        </button>
-        <button type="button" class="lvl-btn" data-lvl="4">
-          <span class="num">STAGE 4</span>
-          <span class="desc">緋紅彈幕 · 高速</span>
-        </button>
-        <button type="button" class="lvl-btn" data-lvl="5">
-          <span class="num">STAGE 5</span>
-          <span class="desc">超新星域 · 極速</span>
-        </button>
-        <button type="button" class="lvl-btn" data-lvl="6">
-          <span class="num">STAGE 6</span>
-          <span class="desc">終焉神域 · 狂暴</span>
-        </button>
+  <!-- 角色與武器商店彈窗 -->
+  <div class="overlay" id="shopOverlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modalTitle">動漫荒野獵人 · 整備室</h2>
+        <span class="money-pill" id="modalMoney">$ 0</span>
       </div>
 
-      <button class="btn-launch" id="startBtn">全速出擊</button>
-      <div class="controls-tip">滑鼠 / 觸控拖曳移動（自動射擊） · 空白鍵 / 右下按鈕釋放全屏大招</div>
+      <div class="section-title">1. 選擇出戰動漫角色（隨時可切換）</div>
+      <div class="char-grid" id="charGrid"></div>
+
+      <div class="section-title">2. 軍火庫（狩獵動物賺錢兌換強大槍械）</div>
+      <div class="gun-list" id="gunList"></div>
+
+      <button class="btn-play" id="resumeBtn">開始狩獵 / 繼續戰鬥</button>
     </div>
   </div>
 
@@ -523,662 +445,820 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const levelDisplay = document.getElementById('levelDisplay');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const bestDisplay = document.getElementById('bestDisplay');
-    const hpBars = document.getElementById('hpBars').children;
-    const ultFill = document.getElementById('ultFill');
-    const ultBtn = document.getElementById('ultBtn');
-    const comboBox = document.getElementById('comboBox');
-    const comboNum = document.getElementById('comboNum');
-    const cutinBanner = document.getElementById('cutinBanner');
-    const overlay = document.getElementById('overlay');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDesc = document.getElementById('modalDesc');
-    const startBtn = document.getElementById('startBtn');
-    const lvlButtons = document.querySelectorAll('.lvl-btn');
-
-    const STORAGE_KEY = 'starlight_valkyrie_best';
-    let bestScore = Number(localStorage.getItem(STORAGE_KEY)) || 0;
-    bestDisplay.textContent = bestScore;
-
-    // 響應式全畫面調整
-    let W = window.innerWidth;
-    let H = window.innerHeight;
-    function resizeCanvas() {
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
       W = canvas.width = window.innerWidth;
       H = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    });
 
-    // 關卡參數設定（從慢速漸進到極速彈幕）
-    const STAGE_CONFIGS = [
-      { enemySpeed: 2.2, spawnRate: 62, shootChance: 0.004, bulletSpeed: 3.4, spread: 1, theme: '#00f0ff' },
-      { enemySpeed: 2.9, spawnRate: 50, shootChance: 0.007, bulletSpeed: 4.1, spread: 2, theme: '#38bdf8' },
-      { enemySpeed: 3.6, spawnRate: 40, shootChance: 0.011, bulletSpeed: 4.8, spread: 2, theme: '#a855f7' },
-      { enemySpeed: 4.4, spawnRate: 32, shootChance: 0.015, bulletSpeed: 5.5, spread: 3, theme: '#f43f5e' },
-      { enemySpeed: 5.2, spawnRate: 25, shootChance: 0.020, bulletSpeed: 6.3, spread: 3, theme: '#f59e0b' },
-      { enemySpeed: 6.1, spawnRate: 19, shootChance: 0.026, bulletSpeed: 7.2, spread: 4, theme: '#ff3b9a' }
+    // 動漫角色資料庫
+    const CHARACTERS = [
+      {
+        id: 'lily',
+        name: '緋紅雙馬尾・莉莉',
+        short: '莉',
+        hairColor: '#ff3b9a',
+        outfitColor: '#fff1f2',
+        speed: 4.8,
+        maxHp: 100,
+        dmgMult: 1.0,
+        perk: '移動速度 +20%\n靈活風箏走位'
+      },
+      {
+        id: 'alice',
+        name: '蒼藍狙擊・愛麗絲',
+        short: '愛',
+        hairColor: '#00d4ff',
+        outfitColor: '#e0f2fe',
+        speed: 4.0,
+        maxHp: 100,
+        dmgMult: 1.25,
+        perk: '全槍械傷害 +25%\n高爆發狩獵專家'
+      },
+      {
+        id: 'chloe',
+        name: '金髮重裝・克蘿伊',
+        short: '克',
+        hairColor: '#fbbf24',
+        outfitColor: '#fef3c7',
+        speed: 3.6,
+        maxHp: 150,
+        dmgMult: 1.05,
+        perk: '生命上限 150 HP\n耐抗動物近身撲咬'
+      }
     ];
 
-    let selectedStartStage = 1;
-    let currentStage = 1;
-    let score = 0;
-    let combo = 0;
-    let comboTimer = 0;
-    let ultEnergy = 0;
-    let isRunning = false;
-    let frameCount = 0;
-    let bannerTimeout = null;
-    let screenShake = 0;
+    // 槍械資料庫（不同槍有不同射速、彈道與特殊功能）
+    const WEAPONS = [
+      {
+        id: 'pistol',
+        name: '1. 星光手槍',
+        price: 0,
+        cooldown: 16,
+        speed: 11,
+        damage: 18,
+        color: '#00f0ff',
+        type: 'single',
+        desc: '標準單發光彈，射速穩定、精準度高'
+      },
+      {
+        id: 'shotgun',
+        name: '2. 雙管霰彈槍',
+        price: 150,
+        cooldown: 34,
+        speed: 9.5,
+        damage: 14,
+        color: '#fb923c',
+        type: 'shotgun',
+        desc: '一次噴射 5 顆扇形鋼珠，貼身擊退近戰動物'
+      },
+      {
+        id: 'smg',
+        name: '3. 疾風衝鋒槍',
+        price: 350,
+        cooldown: 6,
+        speed: 12,
+        damage: 11,
+        color: '#a855f7',
+        type: 'smg',
+        desc: '超高射速連發彈幕，火力壓制狼群'
+      },
+      {
+        id: 'laser',
+        name: '4. 雷射狙擊槍',
+        price: 650,
+        cooldown: 38,
+        speed: 18,
+        damage: 55,
+        color: '#38bdf8',
+        type: 'pierce',
+        desc: '發射貫穿雷射光束，可一次穿透整排動物'
+      },
+      {
+        id: 'rocket',
+        name: '5. 爆裂火箭筒',
+        price: 1200,
+        cooldown: 48,
+        speed: 8.5,
+        damage: 85,
+        color: '#f43f5e',
+        type: 'explosive',
+        desc: '命中目標引發大範圍火焰爆炸，瞬間清場'
+      }
+    ];
 
-    // 玩家女武神狀態
+    // 野生動物資料庫（不同動物有不同血量、速度、近戰傷害與賞金）
+    const ANIMAL_TYPES = [
+      { id: 'rabbit', name: '疾風野兔', hp: 28, speed: 2.7, radius: 16, reward: 15, atk: 8, color: '#f8fafc', earColor: '#fda4af' },
+      { id: 'wolf',   name: '暗影森林狼', hp: 55, speed: 2.3, radius: 21, reward: 35, atk: 14, color: '#64748b', earColor: '#94a3b8' },
+      { id: 'boar',   name: '狂暴鋼牙野豬', hp: 105, speed: 1.8, radius: 26, reward: 60, atk: 22, color: '#78350f', earColor: '#b45309' },
+      { id: 'bear',   name: '巨型棕熊王', hp: 240, speed: 1.35, radius: 36, reward: 150, atk: 32, color: '#451a03', earColor: '#92400e' }
+    ];
+
+    // 路上掉落補給品資料庫（食物、水果、藥箱）
+    const PICKUP_TYPES = [
+      { id: 'apple', name: '紅蘋果', heal: 15, color: '#ef4444', icon: '🍎' },
+      { id: 'meat',  name: '香烤肉排', heal: 30, color: '#f97316', icon: '🍖' },
+      { id: 'medkit', name: '急救藥箱', heal: 60, color: '#22c55e', icon: '➕' }
+    ];
+
+    // 遊戲狀態
+    let money = 0;
+    let unlockedWeapons = ['pistol'];
+    let currentWeaponId = 'pistol';
+    let currentCharId = 'lily';
+    let isPaused = true;
+    let frameCount = 0;
+
     const player = {
       x: W / 2,
-      y: H * 0.8,
-      targetX: W / 2,
-      targetY: H * 0.8,
-      radius: 16,
-      hp: 5,
-      maxHp: 5,
-      invuln: 0,
-      fireCooldown: 0
+      y: H / 2,
+      hp: 100,
+      maxHp: 100,
+      radius: 18,
+      aimAngle: 0,
+      fireTimer: 0,
+      invuln: 0
     };
 
-    let stars = [];
-    let petals = [];
     let bullets = [];
-    let enemyBullets = [];
-    let enemies = [];
+    let animals = [];
+    let pickups = [];
+    let floatTexts = [];
     let particles = [];
-    let shockwaves = [];
+    let slashEffects = [];
+    let grassDecor = [];
 
-    // 初始化星空與櫻花光塵背景
-    function initBackground() {
-      stars = Array.from({ length: 90 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        size: Math.random() * 2.2 + 0.5,
-        speed: Math.random() * 2.5 + 0.5,
-        alpha: Math.random() * 0.8 + 0.2
-      }));
-      petals = Array.from({ length: 22 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        size: Math.random() * 5 + 3,
-        speedY: Math.random() * 1.5 + 0.8,
-        speedX: (Math.random() - 0.5) * 1.2,
-        rot: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.05
-      }));
-    }
-    initBackground();
-
-    function getStageCfg(stage) {
-      return STAGE_CONFIGS[Math.min(stage - 1, STAGE_CONFIGS.length - 1)];
+    // 初始化草地裝飾點
+    for (let i = 0; i < 65; i++) {
+      grassDecor.push({
+        x: Math.random() * 2500,
+        y: Math.random() * 2500,
+        size: Math.random() * 6 + 3,
+        type: Math.random() > 0.3 ? 'grass' : 'flower'
+      });
     }
 
-    function showBanner(text) {
-      clearTimeout(bannerTimeout);
-      cutinBanner.textContent = text;
-      cutinBanner.classList.add('show');
-      bannerTimeout = setTimeout(() => {
-        cutinBanner.classList.remove('show');
-      }, 1600);
+    function getCurrentChar() {
+      return CHARACTERS.find(c => c.id === currentCharId);
+    }
+
+    function getCurrentWeapon() {
+      return WEAPONS.find(w => w.id === currentWeaponId);
+    }
+
+    function selectCharacter(charId) {
+      const prevChar = getCurrentChar();
+      const hpRatio = player.hp / prevChar.maxHp;
+      currentCharId = charId;
+      const nextChar = getCurrentChar();
+      player.maxHp = nextChar.maxHp;
+      player.hp = Math.max(1, Math.round(nextChar.maxHp * hpRatio));
+      updateHUD();
+      renderShopUI();
+    }
+
+    function equipOrBuyWeapon(weaponId) {
+      const w = WEAPONS.find(item => item.id === weaponId);
+      if (!w) return;
+
+      if (unlockedWeapons.includes(weaponId)) {
+        currentWeaponId = weaponId;
+      } else if (money >= w.price) {
+        money -= w.price;
+        unlockedWeapons.push(weaponId);
+        currentWeaponId = weaponId;
+      }
+      updateHUD();
+      renderShopUI();
     }
 
     function updateHUD() {
-      levelDisplay.textContent = `LV ${currentStage}`;
-      scoreDisplay.textContent = score;
-      for (let i = 0; i < player.maxHp; i++) {
-        hpBars[i].classList.toggle('lost', i >= player.hp);
-      }
-      ultFill.style.width = `${ultEnergy}%`;
-      ultBtn.classList.toggle('ready', ultEnergy >= 100);
+      const c = getCurrentChar();
+      document.getElementById('hudAvatar').textContent = c.short;
+      document.getElementById('hudAvatar').style.background = c.hairColor;
+      document.getElementById('hudCharName').textContent = c.name;
+      document.getElementById('hudHpText').textContent = `${player.hp} / ${player.maxHp}`;
+      document.getElementById('hudHpBar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+      document.getElementById('hudMoney').textContent = `$ ${money}`;
+      document.getElementById('modalMoney').textContent = `$ ${money}`;
 
-      if (combo > 1) {
-        comboBox.classList.add('active');
-        comboNum.textContent = combo;
-      } else {
-        comboBox.classList.remove('active');
-      }
-    }
-
-    // 關卡選擇按鈕事件
-    lvlButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        lvlButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedStartStage = Number(btn.dataset.lvl);
-        currentStage = selectedStartStage;
-        levelDisplay.textContent = `LV ${currentStage}`;
+      // 更新底部武器快捷列
+      const dock = document.getElementById('weaponDock');
+      dock.innerHTML = '';
+      WEAPONS.forEach((w, idx) => {
+        const isUnlocked = unlockedWeapons.includes(w.id);
+        const isActive = currentWeaponId === w.id;
+        const slot = document.createElement('div');
+        slot.className = `w-slot ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`;
+        slot.innerHTML = `
+          <span class="w-key">[${idx + 1}]</span>
+          <span class="w-name">${w.name.split('. ')[1]}</span>
+          <span class="w-price">${isUnlocked ? (isActive ? '裝備中' : '已擁有') : `$${w.price}`}</span>
+        `;
+        slot.onclick = () => {
+          if (isUnlocked) {
+            currentWeaponId = w.id;
+            updateHUD();
+          } else {
+            openShop();
+          }
+        };
+        dock.appendChild(slot);
       });
-    });
-
-    function startGame() {
-      score = 0;
-      combo = 0;
-      ultEnergy = 40; // 開場贈送 40% 能量
-      currentStage = selectedStartStage;
-      frameCount = 0;
-      screenShake = 0;
-
-      player.x = W / 2;
-      player.y = H * 0.82;
-      player.targetX = player.x;
-      player.targetY = player.y;
-      player.hp = player.maxHp;
-      player.invuln = 60;
-
-      bullets = [];
-      enemyBullets = [];
-      enemies = [];
-      particles = [];
-      shockwaves = [];
-
-      isRunning = true;
-      overlay.classList.add('hidden');
-      updateHUD();
-      showBanner(`STAGE ${currentStage} · STARLIGHT ENGAGE!`);
     }
 
-    function endGame() {
-      isRunning = false;
-      if (score > bestScore) {
-        bestScore = score;
-        localStorage.setItem(STORAGE_KEY, bestScore);
-        bestDisplay.textContent = bestScore;
-      }
-      modalTitle.textContent = 'MISSION COMPLETE';
-      modalDesc.innerHTML = `最終抵達：<strong>STAGE ${currentStage}</strong><br>戰鬥總分：<strong>${score}</strong> 分（最高紀錄 ${bestScore} 分）`;
-      startBtn.textContent = '再次出擊';
-      overlay.classList.remove('hidden');
-    }
-
-    // 釋放全畫面星爆大招 (STAR BURST)
-    function triggerStarBurst() {
-      if (!isRunning || ultEnergy < 100) return;
-      ultEnergy = 0;
-      screenShake = 18;
-      showBanner('★ STARLIGHT OVERDRIVE ★');
-
-      // 產生全屏光環衝擊波
-      shockwaves.push({ x: player.x, y: player.y, radius: 10, maxRadius: Math.max(W, H), alpha: 1 });
-
-      // 清除所有敵方子彈並轉化為分數
-      enemyBullets.forEach(b => {
-        spawnParticles(b.x, b.y, '#00f0ff', 4);
-        score += 5;
+    function renderShopUI() {
+      const charGrid = document.getElementById('charGrid');
+      charGrid.innerHTML = '';
+      CHARACTERS.forEach(c => {
+        const card = document.createElement('div');
+        card.className = `char-card ${c.id === currentCharId ? 'active' : ''}`;
+        card.innerHTML = `
+          <span class="c-name" style="color:${c.hairColor}">${c.name}</span>
+          <span class="c-perk">${c.perk.replace('\n', '<br>')}</span>
+        `;
+        card.onclick = () => selectCharacter(c.id);
+        charGrid.appendChild(card);
       });
-      enemyBullets = [];
 
-      // 對場上所有敵機造成巨量傷害
-      for (let i = enemies.length - 1; i >= 0; i--) {
-        const e = enemies[i];
-        e.hp -= 12;
-        spawnParticles(e.x, e.y, '#ff3b9a', 14);
-        if (e.hp <= 0) {
-          addScore(e.points);
-          enemies.splice(i, 1);
+      const gunList = document.getElementById('gunList');
+      gunList.innerHTML = '';
+      WEAPONS.forEach(w => {
+        const isUnlocked = unlockedWeapons.includes(w.id);
+        const isEquipped = currentWeaponId === w.id;
+        const row = document.createElement('div');
+        row.className = 'gun-row';
+
+        let btnHtml = '';
+        if (isEquipped) {
+          btnHtml = `<button class="btn-action btn-equipped">使用中</button>`;
+        } else if (isUnlocked) {
+          btnHtml = `<button class="btn-action btn-equip" onclick="equipOrBuyWeapon('${w.id}')">切換裝備</button>`;
+        } else {
+          const canAfford = money >= w.price;
+          btnHtml = `<button class="btn-action btn-buy" ${canAfford ? '' : 'disabled'} onclick="equipOrBuyWeapon('${w.id}')">$${w.price} 兌換</button>`;
         }
-      }
-      updateHUD();
+
+        row.innerHTML = `
+          <div class="gun-info">
+            <h4 style="color:${w.color}">${w.name}</h4>
+            <p>${w.desc}</p>
+          </div>
+          ${btnHtml}
+        `;
+        gunList.appendChild(row);
+      });
     }
 
-    ultBtn.addEventListener('click', triggerStarBurst);
-
-    function addScore(basePoints) {
-      combo++;
-      comboTimer = 150; // 約 2.5 秒內連殺維持 Combo
-      const multiplier = 1 + Math.min(Math.floor(combo / 10) * 0.2, 2.0);
-      score += Math.round(basePoints * multiplier);
-
-      // 每 500 分自動升級關卡
-      const nextStage = selectedStartStage + Math.floor(score / 500);
-      if (nextStage > currentStage) {
-        currentStage = nextStage;
-        showBanner(`STAGE ${currentStage} · 火力與速度升級！`);
-      }
-      updateHUD();
+    function openShop() {
+      isPaused = true;
+      renderShopUI();
+      document.getElementById('shopOverlay').classList.remove('hidden');
     }
 
-    function spawnParticles(x, y, color, count = 10) {
+    function closeShop() {
+      if (player.hp <= 0) {
+        // 陣亡後重新復活
+        const c = getCurrentChar();
+        player.hp = c.maxHp;
+        player.x = W / 2;
+        player.y = H / 2;
+        animals = [];
+        bullets = [];
+        updateHUD();
+      }
+      isPaused = false;
+      document.getElementById('shopOverlay').classList.add('hidden');
+    }
+
+    document.getElementById('openShopBtn').onclick = openShop;
+    document.getElementById('resumeBtn').onclick = closeShop;
+
+    function addFloatText(x, y, text, color) {
+      floatTexts.push({ x, y, text, color, life: 45 });
+    }
+
+    function spawnParticles(x, y, color, count = 8) {
       for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 4.5 + 1;
+        const ang = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 4 + 1;
         particles.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          size: Math.random() * 3.5 + 1.5,
+          x, y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd,
+          size: Math.random() * 4 + 2,
           color,
-          life: 1,
-          decay: Math.random() * 0.03 + 0.02
+          life: 1
         });
       }
     }
 
-    function spawnEnemy() {
-      const cfg = getStageCfg(currentStage);
+    function spawnAnimal() {
+      // 從畫面四個邊緣隨機生成動物
+      const side = Math.floor(Math.random() * 4);
+      let x = 0, y = 0;
+      if (side === 0) { x = Math.random() * W; y = -40; }
+      if (side === 1) { x = W + 40; y = Math.random() * H; }
+      if (side === 2) { x = Math.random() * W; y = H + 40; }
+      if (side === 3) { x = -40; y = Math.random() * H; }
+
       const roll = Math.random();
-      let type = 'fairy'; // 預設暗影精靈機
-      let radius = 18;
-      let hp = 2 + Math.floor(currentStage * 0.6);
-      let points = 30;
-      let color = '#a855f7';
-      let speedY = cfg.enemySpeed * (0.9 + Math.random() * 0.3);
+      let template = ANIMAL_TYPES[0]; // 野兔
+      if (roll > 0.90) template = ANIMAL_TYPES[3]; // 巨型棕熊王
+      else if (roll > 0.72) template = ANIMAL_TYPES[2]; // 野豬
+      else if (roll > 0.42) template = ANIMAL_TYPES[1]; // 森林狼
 
-      if (roll > 0.84) {
-        // 精英魔導機甲（血厚、會發射扇形彈幕）
-        type = 'valkyrie_dark';
-        radius = 28;
-        hp = 8 + currentStage * 2;
-        points = 120;
-        color = '#ff3b9a';
-        speedY = cfg.enemySpeed * 0.65;
-      } else if (roll > 0.62) {
-        // 高速突襲機（左右搖擺移動）
-        type = 'striker';
-        radius = 16;
-        hp = 2 + Math.floor(currentStage * 0.4);
-        points = 50;
-        color = '#00f0ff';
-        speedY = cfg.enemySpeed * 1.25;
-      }
-
-      enemies.push({
-        type,
-        x: Math.random() * (W - 80) + 40,
-        y: -40,
-        baseX: 0,
-        radius,
-        hp,
-        maxHp: hp,
-        points,
-        color,
-        speedY,
-        phase: Math.random() * Math.PI * 2
+      animals.push({
+        ...template,
+        x, y,
+        maxHp: template.hp,
+        attackCooldown: 0,
+        knockbackX: 0,
+        knockbackY: 0
       });
     }
 
-    function firePlayerBullets() {
-      const cfg = getStageCfg(currentStage);
-      const spread = cfg.spread;
-      const speed = -11;
+    function spawnPickup() {
+      if (pickups.length >= 5) return;
+      const item = PICKUP_TYPES[Math.floor(Math.random() * PICKUP_TYPES.length)];
+      pickups.push({
+        ...item,
+        x: Math.random() * (W - 120) + 60,
+        y: Math.random() * (H - 160) + 80,
+        bobPhase: Math.random() * Math.PI * 2
+      });
+    }
 
-      if (spread === 1) {
-        bullets.push({ x: player.x, y: player.y - 20, vx: 0, vy: speed, color: '#00f0ff', dmg: 1.5 });
-      } else if (spread === 2) {
-        bullets.push({ x: player.x - 10, y: player.y - 16, vx: 0, vy: speed, color: '#00f0ff', dmg: 1.4 });
-        bullets.push({ x: player.x + 10, y: player.y - 16, vx: 0, vy: speed, color: '#00f0ff', dmg: 1.4 });
-      } else if (spread === 3) {
-        bullets.push({ x: player.x, y: player.y - 22, vx: 0, vy: speed, color: '#ff3b9a', dmg: 1.6 });
-        bullets.push({ x: player.x - 14, y: player.y - 14, vx: -1.4, vy: speed * 0.98, color: '#00f0ff', dmg: 1.3 });
-        bullets.push({ x: player.x + 14, y: player.y - 14, vx: 1.4, vy: speed * 0.98, color: '#00f0ff', dmg: 1.3 });
-      } else {
-        // 狂暴 4 道星光彈幕
-        [-18, -6, 6, 18].forEach((offset, idx) => {
+    function shoot() {
+      const w = getCurrentWeapon();
+      const c = getCurrentChar();
+      const dmg = Math.round(w.damage * c.dmgMult);
+      const muzzleX = player.x + Math.cos(player.aimAngle) * 22;
+      const muzzleY = player.y + Math.sin(player.aimAngle) * 22;
+
+      if (w.type === 'shotgun') {
+        // 霰彈槍：5 發扇形彈道 + 擊退力
+        [-0.28, -0.14, 0, 0.14, 0.28].forEach(offset => {
+          const ang = player.aimAngle + offset;
           bullets.push({
-            x: player.x + offset,
-            y: player.y - 16,
-            vx: (idx - 1.5) * 0.85,
-            vy: speed,
-            color: idx === 1 || idx === 2 ? '#ffd700' : '#ff3b9a',
-            dmg: 1.5
+            x: muzzleX, y: muzzleY,
+            vx: Math.cos(ang) * w.speed,
+            vy: Math.sin(ang) * w.speed,
+            damage: dmg,
+            color: w.color,
+            radius: 4,
+            type: 'shotgun',
+            life: 26 // 射程較短但近戰極強
           });
         });
+      } else if (w.type === 'smg') {
+        // 衝鋒槍：高速連發帶微幅散射
+        const spread = (Math.random() - 0.5) * 0.12;
+        const ang = player.aimAngle + spread;
+        bullets.push({
+          x: muzzleX, y: muzzleY,
+          vx: Math.cos(ang) * w.speed,
+          vy: Math.sin(ang) * w.speed,
+          damage: dmg,
+          color: w.color,
+          radius: 4,
+          type: 'smg',
+          life: 65
+        });
+      } else if (w.type === 'pierce') {
+        // 雷射狙擊槍：可貫穿多個敵人
+        bullets.push({
+          x: muzzleX, y: muzzleY,
+          vx: Math.cos(player.aimAngle) * w.speed,
+          vy: Math.sin(player.aimAngle) * w.speed,
+          damage: dmg,
+          color: w.color,
+          radius: 6,
+          type: 'pierce',
+          hitList: [],
+          life: 70
+        });
+      } else if (w.type === 'explosive') {
+        // 火箭筒：大範圍爆炸
+        bullets.push({
+          x: muzzleX, y: muzzleY,
+          vx: Math.cos(player.aimAngle) * w.speed,
+          vy: Math.sin(player.aimAngle) * w.speed,
+          damage: dmg,
+          color: w.color,
+          radius: 8,
+          type: 'explosive',
+          life: 80
+        });
+      } else {
+        // 初始手槍
+        bullets.push({
+          x: muzzleX, y: muzzleY,
+          vx: Math.cos(player.aimAngle) * w.speed,
+          vy: Math.sin(player.aimAngle) * w.speed,
+          damage: dmg,
+          color: w.color,
+          radius: 5,
+          type: 'single',
+          life: 70
+        });
       }
     }
 
-    // 繪製動漫風格星光女武神機體（帶雙馬尾流光與魔法星翼）
-    function drawAnimePlayer(x, y) {
+    // 繪製動漫 Q 版獵人角色與手持槍械
+    function drawAnimeHunter() {
+      const c = getCurrentChar();
+      const w = getCurrentWeapon();
+
       ctx.save();
-      ctx.translate(x, y);
+      ctx.translate(player.x, player.y);
 
       if (player.invuln > 0 && Math.floor(frameCount / 4) % 2 === 0) {
-        ctx.globalAlpha = 0.45;
+        ctx.globalAlpha = 0.5;
       }
 
-      const cfg = getStageCfg(currentStage);
-
-      // 背後展開的發光魔法星翼
-      ctx.shadowColor = cfg.theme;
-      ctx.shadowBlur = 18;
-      ctx.fillStyle = 'rgba(0, 240, 255, 0.28)';
+      // 腳底光環
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.beginPath();
-      ctx.moveTo(0, -4);
-      ctx.lineTo(-34, 14);
-      ctx.lineTo(-18, 22);
-      ctx.lineTo(0, 10);
-      ctx.lineTo(18, 22);
-      ctx.lineTo(34, 14);
-      ctx.closePath();
+      ctx.ellipse(0, 16, 16, 7, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 雙馬尾飄動光帶
-      const sway = Math.sin(frameCount * 0.15) * 5;
-      ctx.strokeStyle = '#ff3b9a';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
+      // 角色雙馬尾 / 長髮飄動
+      const sway = Math.sin(frameCount * 0.14) * 3;
+      ctx.fillStyle = c.hairColor;
       ctx.beginPath();
-      ctx.moveTo(-7, -6);
-      ctx.quadraticCurveTo(-18, 8, -14 + sway, 24);
-      ctx.moveTo(7, -6);
-      ctx.quadraticCurveTo(18, 8, 14 + sway, 24);
+      ctx.arc(-13, -4 + sway, 7, 0, Math.PI * 2);
+      ctx.arc(13, -4 - sway, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 角色身體（動漫披風與服裝）
+      ctx.fillStyle = c.outfitColor;
+      ctx.beginPath();
+      ctx.roundRect(-11, -4, 22, 20, 8);
+      ctx.fill();
+
+      // 角色頭部與頭髮
+      ctx.fillStyle = '#fde68a';
+      ctx.beginPath();
+      ctx.arc(0, -10, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = c.hairColor;
+      ctx.beginPath();
+      ctx.arc(0, -13, 12.5, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // 動漫大眼睛（朝向瞄準方向微移）
+      const lookX = Math.cos(player.aimAngle) * 3;
+      const lookY = Math.sin(player.aimAngle) * 2;
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(-4 + lookX, -9 + lookY, 2.2, 0, Math.PI * 2);
+      ctx.arc(4 + lookX, -9 + lookY, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 手持槍械（隨滑鼠角度旋轉）
+      ctx.rotate(player.aimAngle);
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = w.color;
+      ctx.lineWidth = 2;
+      const gunLen = w.type === 'pierce' || w.type === 'rocket' ? 28 : 20;
+      ctx.beginPath();
+      ctx.roundRect(6, -4, gunLen, 8, 3);
+      ctx.fill();
       ctx.stroke();
 
-      // 機體核心（鑽石星辰裝甲）
-      ctx.fillStyle = '#ffffff';
+      ctx.restore();
+    }
+
+    // 繪製野生動物與血條
+    function drawAnimal(a) {
+      ctx.save();
+      ctx.translate(a.x, a.y);
+
+      // 腳底陰影
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath();
-      ctx.moveTo(0, -22);
-      ctx.lineTo(12, 8);
-      ctx.lineTo(0, 16);
-      ctx.lineTo(-12, 8);
-      ctx.closePath();
+      ctx.ellipse(0, a.radius * 0.85, a.radius * 0.9, a.radius * 0.4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 胸口粉紅星光核心
-      ctx.fillStyle = '#ff3b9a';
+      // 耳朵
+      ctx.fillStyle = a.earColor;
+      const earH = a.id === 'rabbit' ? 14 : 8;
       ctx.beginPath();
-      ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      ctx.ellipse(-a.radius * 0.45, -a.radius * 0.8, 4, earH, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(a.radius * 0.45, -a.radius * 0.8, 4, earH, 0.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // 引擎推進尾焰
-      ctx.fillStyle = '#00f0ff';
+      // 身體圓形
+      ctx.fillStyle = a.color;
       ctx.beginPath();
-      ctx.moveTo(-5, 16);
-      ctx.lineTo(0, 26 + Math.random() * 8);
-      ctx.lineTo(5, 16);
-      ctx.closePath();
+      ctx.arc(0, 0, a.radius, 0, Math.PI * 2);
       ctx.fill();
+
+      // 發紅光的兇猛眼睛（準備近戰攻擊）
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(-a.radius * 0.32, -a.radius * 0.15, 3, 0, Math.PI * 2);
+      ctx.arc(a.radius * 0.32, -a.radius * 0.15, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 動物名稱與血條
+      const hpRatio = Math.max(0, a.hp / a.maxHp);
+      const barW = a.radius * 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(-barW / 2, -a.radius - 14, barW, 5);
+      ctx.fillStyle = hpRatio > 0.4 ? '#22c55e' : '#ef4444';
+      ctx.fillRect(-barW / 2, -a.radius - 14, barW * hpRatio, 5);
 
       ctx.restore();
     }
 
-    // 繪製敵機（動漫幾何魔導造型）
-    function drawEnemy(e) {
-      ctx.save();
-      ctx.translate(e.x, e.y);
-      ctx.shadowColor = e.color;
-      ctx.shadowBlur = 14;
+    // 輸入控制
+    const keys = {};
+    let isMouseDown = false;
+    let isTouching = false;
 
-      if (e.type === 'valkyrie_dark') {
-        // 精英暗影女武神 Boss 機
-        ctx.fillStyle = '#1e1035';
-        ctx.strokeStyle = e.color;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(0, e.radius);
-        ctx.lineTo(e.radius * 1.3, -e.radius * 0.4);
-        ctx.lineTo(e.radius * 0.5, -e.radius);
-        ctx.lineTo(0, -e.radius * 0.5);
-        ctx.lineTo(-e.radius * 0.5, -e.radius);
-        ctx.lineTo(-e.radius * 1.3, -e.radius * 0.4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // 血條
-        const hpRatio = Math.max(0, e.hp / e.maxHp);
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.fillRect(-22, -e.radius - 10, 44, 4);
-        ctx.fillStyle = '#ff3b9a';
-        ctx.fillRect(-22, -e.radius - 10, 44 * hpRatio, 4);
-      } else {
-        // 一般暗影無人機
-        ctx.fillStyle = e.color;
-        ctx.beginPath();
-        ctx.moveTo(0, e.radius);
-        ctx.lineTo(e.radius, -e.radius * 0.6);
-        ctx.lineTo(0, -e.radius * 0.2);
-        ctx.lineTo(-e.radius, -e.radius * 0.6);
-        ctx.closePath();
-        ctx.fill();
+    window.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].includes(e.code)) {
+        const idx = Number(e.code.replace('Digit', '')) - 1;
+        if (WEAPONS[idx] && unlockedWeapons.includes(WEAPONS[idx].id)) {
+          currentWeaponId = WEAPONS[idx].id;
+          updateHUD();
+        }
       }
+    });
+    window.addEventListener('keyup', e => keys[e.code] = false);
 
-      // 敵機發光瞳孔核心
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(0, 0, e.radius * 0.24, 0, Math.PI * 2);
-      ctx.fill();
+    canvas.addEventListener('mousemove', e => {
+      player.aimAngle = Math.atan2(e.clientY - player.y, e.clientX - player.x);
+    });
+    canvas.addEventListener('mousedown', e => {
+      if (e.button === 0) isMouseDown = true;
+    });
+    window.addEventListener('mouseup', () => isMouseDown = false);
 
-      ctx.restore();
-    }
+    // 手機觸控：拖曳移動並自動鎖定最近動物射擊
+    let touchTarget = null;
+    canvas.addEventListener('touchstart', e => {
+      isTouching = true;
+      const t = e.touches[0];
+      touchTarget = { x: t.clientX, y: t.clientY };
+    }, { passive: true });
+    canvas.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      touchTarget = { x: t.clientX, y: t.clientY };
+    }, { passive: true });
+    canvas.addEventListener('touchend', () => {
+      isTouching = false;
+      touchTarget = null;
+    });
 
-    function updateAndDraw() {
-      ctx.save();
-
-      // 畫面震動效果
-      if (screenShake > 0) {
-        const sx = (Math.random() - 0.5) * screenShake;
-        const sy = (Math.random() - 0.5) * screenShake;
-        ctx.translate(sx, sy);
-        screenShake *= 0.88;
-        if (screenShake < 0.5) screenShake = 0;
-      }
-
-      // 深空漸層背景
-      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-      bgGrad.addColorStop(0, '#070514');
-      bgGrad.addColorStop(0.5, '#0f0a29');
-      bgGrad.addColorStop(1, '#180d38');
-      ctx.fillStyle = bgGrad;
+    function gameLoop() {
+      // 繪製荒野草地背景
+      ctx.fillStyle = '#14261c';
       ctx.fillRect(0, 0, W, H);
 
-      const cfg = getStageCfg(currentStage);
-      const speedMult = isRunning ? (0.8 + currentStage * 0.25) : 0.6;
-
-      // 繪製背景流光星點
-      stars.forEach(s => {
-        s.y += s.speed * speedMult;
-        if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
-        ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
-        ctx.fillRect(s.x, s.y, s.size, s.size * (1 + speedMult * 0.8));
-      });
-
-      // 繪製動漫櫻花光瓣
-      petals.forEach(p => {
-        p.y += p.speedY * speedMult;
-        p.x += p.speedX + Math.sin(frameCount * 0.02 + p.rot) * 0.5;
-        p.rot += p.rotSpeed;
-        if (p.y > H + 10) { p.y = -10; p.x = Math.random() * W; }
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = 'rgba(255, 110, 180, 0.35)';
+      // 草叢與野花細節
+      grassDecor.forEach(g => {
+        const gx = g.x % W;
+        const gy = g.y % H;
+        ctx.fillStyle = g.type === 'grass' ? '#1c3628' : 'rgba(255, 182, 193, 0.35)';
         ctx.beginPath();
-        ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, Math.PI * 2);
+        ctx.arc(gx, gy, g.size, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
       });
 
-      if (isRunning) {
+      if (!isPaused) {
         frameCount++;
+        const char = getCurrentChar();
+        const weapon = getCurrentWeapon();
 
-        // 連擊計時倒數
-        if (comboTimer > 0) {
-          comboTimer--;
-          if (comboTimer === 0) {
-            combo = 0;
-            updateHUD();
+        // 1. 角色移動控制
+        let moveX = 0, moveY = 0;
+        if (keys['KeyW'] || keys['ArrowUp']) moveY -= 1;
+        if (keys['KeyS'] || keys['ArrowDown']) moveY += 1;
+        if (keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
+        if (keys['KeyD'] || keys['ArrowRight']) moveX += 1;
+
+        if (moveX !== 0 || moveY !== 0) {
+          const len = Math.hypot(moveX, moveY);
+          player.x += (moveX / len) * char.speed;
+          player.y += (moveY / len) * char.speed;
+        } else if (isTouching && touchTarget) {
+          const dx = touchTarget.x - player.x;
+          const dy = touchTarget.y - player.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist > 8) {
+            player.x += (dx / dist) * char.speed;
+            player.y += (dy / dist) * char.speed;
           }
         }
 
-        // 平滑移動玩家位置
-        player.x += (player.targetX - player.x) * 0.22;
-        player.y += (player.targetY - player.y) * 0.22;
         player.x = Math.max(24, Math.min(W - 24, player.x));
-        player.y = Math.max(60, Math.min(H - 24, player.y));
+        player.y = Math.max(64, Math.min(H - 85, player.y));
 
         if (player.invuln > 0) player.invuln--;
 
-        // 自動射擊星光彈
-        if (player.fireCooldown <= 0) {
-          firePlayerBullets();
-          player.fireCooldown = Math.max(6, 11 - currentStage);
-        } else {
-          player.fireCooldown--;
+        // 手機觸控時自動瞄準最近的動物
+        if (isTouching && animals.length > 0) {
+          let nearest = animals[0];
+          let minD = Infinity;
+          animals.forEach(a => {
+            const d = Math.hypot(a.x - player.x, a.y - player.y);
+            if (d < minD) { minD = d; nearest = a; }
+          });
+          player.aimAngle = Math.atan2(nearest.y - player.y, nearest.x - player.x);
         }
 
-        // 生成敵機
-        if (frameCount % cfg.spawnRate === 0) {
-          spawnEnemy();
+        // 2. 射擊控制
+        if (player.fireTimer > 0) player.fireTimer--;
+        if ((isMouseDown || isTouching) && player.fireTimer <= 0) {
+          shoot();
+          player.fireTimer = weapon.cooldown;
         }
+
+        // 3. 定期生成野生動物與路上補給品
+        if (frameCount % 75 === 0 && animals.length < 18) spawnAnimal();
+        if (frameCount % 260 === 0) spawnPickup();
       }
 
-      // 更新與繪製大招光環衝擊波
-      for (let i = shockwaves.length - 1; i >= 0; i--) {
-        const sw = shockwaves[i];
-        sw.radius += 26;
-        sw.alpha -= 0.028;
-        if (sw.alpha <= 0) {
-          shockwaves.splice(i, 1);
-          continue;
-        }
+      // 4. 更新與繪製路上補給（食物、水果、藥箱）
+      for (let i = pickups.length - 1; i >= 0; i--) {
+        const p = pickups[i];
+        p.bobPhase += 0.08;
+        const offsetY = Math.sin(p.bobPhase) * 4;
+
+        // 發光底圈
         ctx.save();
-        ctx.strokeStyle = `rgba(0, 240, 255, ${sw.alpha})`;
-        ctx.lineWidth = 8;
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.22)';
         ctx.beginPath();
-        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.arc(p.x, p.y + offsetY, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = '22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.icon, p.x, p.y + offsetY);
         ctx.restore();
+
+        // 玩家撿取補給
+        if (!isPaused && Math.hypot(player.x - p.x, player.y - p.y) < player.radius + 18) {
+          const healed = Math.min(player.maxHp - player.hp, p.heal);
+          player.hp = Math.min(player.maxHp, player.hp + p.heal);
+          addFloatText(player.x, player.y - 24, `${p.name} +${healed > 0 ? healed : p.heal} HP`, '#4ade80');
+          spawnParticles(p.x, p.y, '#4ade80', 10);
+          updateHUD();
+          pickups.splice(i, 1);
+        }
       }
 
-      // 更新與繪製玩家星光彈
+      // 5. 更新與繪製子彈
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
-        b.x += b.vx;
-        b.y += b.vy;
-        if (b.y < -20) {
-          bullets.splice(i, 1);
-          continue;
+        if (!isPaused) {
+          b.x += b.vx;
+          b.y += b.vy;
+          b.life--;
         }
+
         ctx.save();
         ctx.shadowColor = b.color;
         ctx.shadowBlur = 10;
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = b.type === 'pierce' ? '#fff' : b.color;
         ctx.beginPath();
-        ctx.roundRect(b.x - 2.5, b.y - 10, 5, 18, 3);
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-      }
 
-      // 更新與繪製敵機
-      for (let i = enemies.length - 1; i >= 0; i--) {
-        const e = enemies[i];
-        e.y += e.speedY;
-        if (e.type === 'striker') {
-          e.x += Math.sin(frameCount * 0.06 + e.phase) * 2.8;
+        if (b.life <= 0 || b.x < -50 || b.x > W + 50 || b.y < -50 || b.y > H + 50) {
+          bullets.splice(i, 1);
+          continue;
         }
 
-        // 敵機發射彈幕
-        if (isRunning && e.y > 40 && e.y < H * 0.7 && Math.random() < cfg.shootChance) {
-          const angle = Math.atan2(player.y - e.y, player.x - e.x);
-          if (e.type === 'valkyrie_dark') {
-            // 精英機發射 3 向扇形彈
-            [-0.25, 0, 0.25].forEach(offset => {
-              enemyBullets.push({
-                x: e.x,
-                y: e.y + 10,
-                vx: Math.cos(angle + offset) * cfg.bulletSpeed,
-                vy: Math.sin(angle + offset) * cfg.bulletSpeed
-              });
-            });
-          } else {
-            enemyBullets.push({
-              x: e.x,
-              y: e.y + 10,
-              vx: Math.cos(angle) * cfg.bulletSpeed,
-              vy: Math.sin(angle) * cfg.bulletSpeed
-            });
-          }
-        }
+        // 子彈命中動物判定
+        if (!isPaused) {
+          for (let j = animals.length - 1; j >= 0; j--) {
+            const a = animals[j];
+            if (b.type === 'pierce' && b.hitList.includes(a)) continue;
 
-        // 檢查玩家子彈擊中敵機
-        for (let j = bullets.length - 1; j >= 0; j--) {
-          const b = bullets[j];
-          const dist = Math.hypot(b.x - e.x, b.y - e.y);
-          if (dist < e.radius + 8) {
-            e.hp -= b.dmg;
-            spawnParticles(b.x, b.y, b.color, 4);
-            bullets.splice(j, 1);
+            if (Math.hypot(b.x - a.x, b.y - a.y) < a.radius + b.radius) {
+              if (b.type === 'explosive') {
+                // 火箭筒範圍爆炸
+                spawnParticles(b.x, b.y, '#f43f5e', 22);
+                animals.forEach(target => {
+                  if (Math.hypot(b.x - target.x, b.y - target.y) < 110) {
+                    target.hp -= b.damage;
+                    addFloatText(target.x, target.y - 15, `-${b.damage}`, '#fb7185');
+                  }
+                });
+                bullets.splice(i, 1);
+                break;
+              } else {
+                a.hp -= b.damage;
+                addFloatText(a.x, a.y - 15, `-${b.damage}`, '#fff');
+                spawnParticles(b.x, b.y, b.color, 5);
 
-            if (e.hp <= 0) {
-              spawnParticles(e.x, e.y, e.color, 16);
-              ultEnergy = Math.min(100, ultEnergy + (e.type === 'valkyrie_dark' ? 18 : 7));
-              addScore(e.points);
-              enemies.splice(i, 1);
+                // 霰彈槍近距離擊退效果
+                if (b.type === 'shotgun') {
+                  const pushAng = Math.atan2(a.y - player.y, a.x - player.x);
+                  a.knockbackX = Math.cos(pushAng) * 7;
+                  a.knockbackY = Math.sin(pushAng) * 7;
+                }
+
+                if (b.type === 'pierce') {
+                  b.hitList.push(a);
+                } else {
+                  bullets.splice(i, 1);
+                }
+                break;
+              }
             }
-            break;
           }
         }
-
-        if (!enemies[i]) continue;
-
-        // 檢查敵機撞擊玩家
-        if (isRunning && player.invuln <= 0) {
-          const pDist = Math.hypot(player.x - e.x, player.y - e.y);
-          if (pDist < player.radius + e.radius - 4) {
-            enemies.splice(i, 1);
-            damagePlayer();
-            continue;
-          }
-        }
-
-        if (e.y > H + 50) {
-          enemies.splice(i, 1);
-          continue;
-        }
-
-        drawEnemy(e);
       }
 
-      // 更新與繪製敵方彈幕
-      for (let i = enemyBullets.length - 1; i >= 0; i--) {
-        const eb = enemyBullets[i];
-        eb.x += eb.vx;
-        eb.y += eb.vy;
+      // 6. 更新與繪製動物（追蹤玩家並近身攻擊）
+      for (let i = animals.length - 1; i >= 0; i--) {
+        const a = animals[i];
 
-        if (eb.y > H + 20 || eb.x < -20 || eb.x > W + 20) {
-          enemyBullets.splice(i, 1);
+        // 檢查動物是否被擊殺
+        if (a.hp <= 0) {
+          money += a.reward;
+          addFloatText(a.x, a.y - 20, `+$${a.reward} (${a.name})`, '#ffd700');
+          spawnParticles(a.x, a.y, '#ffd700', 14);
+          updateHUD();
+          animals.splice(i, 1);
           continue;
         }
 
-        if (isRunning && player.invuln <= 0) {
-          const dist = Math.hypot(eb.x - player.x, eb.y - player.y);
-          if (dist < player.radius - 3) {
-            enemyBullets.splice(i, 1);
-            damagePlayer();
-            continue;
+        if (!isPaused) {
+          const ang = Math.atan2(player.y - a.y, player.x - a.x);
+          const dist = Math.hypot(player.x - a.x, player.y - a.y);
+
+          // 應用擊退位移
+          a.x += a.knockbackX;
+          a.y += a.knockbackY;
+          a.knockbackX *= 0.8;
+          a.knockbackY *= 0.8;
+
+          if (dist > a.radius + player.radius - 4) {
+            a.x += Math.cos(ang) * a.speed;
+            a.y += Math.sin(ang) * a.speed;
+          } else {
+            // 近身撲咬攻擊玩家角色！
+            if (a.attackCooldown <= 0) {
+              a.attackCooldown = 48; // 約 0.8 秒咬一次
+              slashEffects.push({ x: player.x, y: player.y, life: 12 });
+              if (player.invuln <= 0) {
+                player.hp = Math.max(0, player.hp - a.atk);
+                player.invuln = 25;
+                addFloatText(player.x, player.y - 28, `-${a.atk} HP!`, '#ef4444');
+                spawnParticles(player.x, player.y, '#ef4444', 10);
+                updateHUD();
+
+                if (player.hp <= 0) {
+                  document.getElementById('modalTitle').textContent = '獵人重傷倒下！調整裝備再出發';
+                  openShop();
+                }
+              }
+            }
           }
+          if (a.attackCooldown > 0) a.attackCooldown--;
         }
 
+        drawAnimal(a);
+      }
+
+      // 7. 繪製玩家獵人
+      drawAnimeHunter();
+
+      // 8. 繪製動物近戰爪擊特效
+      for (let i = slashEffects.length - 1; i >= 0; i--) {
+        const s = slashEffects[i];
         ctx.save();
-        ctx.shadowColor = '#ff2a85';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#ff2a85';
+        ctx.strokeStyle = `rgba(239, 68, 68, ${s.life / 12})`;
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 5.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 2.2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(s.x - 16, s.y - 16);
+        ctx.lineTo(s.x + 16, s.y + 16);
+        ctx.moveTo(s.x + 16, s.y - 16);
+        ctx.lineTo(s.x - 16, s.y + 16);
+        ctx.stroke();
         ctx.restore();
+        s.life--;
+        if (s.life <= 0) slashEffects.splice(i, 1);
       }
 
-      // 更新與繪製爆炸星塵粒子
+      // 9. 繪製粒子與浮動傷害/金幣文字
       for (let i = particles.length - 1; i >= 0; i--) {
         const pt = particles[i];
         pt.x += pt.vx;
         pt.y += pt.vy;
-        pt.life -= pt.decay;
-        if (pt.life <= 0) {
-          particles.splice(i, 1);
-          continue;
-        }
+        pt.life -= 0.035;
+        if (pt.life <= 0) { particles.splice(i, 1); continue; }
         ctx.save();
         ctx.globalAlpha = pt.life;
         ctx.fillStyle = pt.color;
@@ -1188,66 +1268,27 @@
         ctx.restore();
       }
 
-      // 繪製玩家女武神
-      drawAnimePlayer(player.x, player.y);
+      for (let i = floatTexts.length - 1; i >= 0; i--) {
+        const ft = floatTexts[i];
+        ft.y -= 0.9;
+        ft.life--;
+        if (ft.life <= 0) { floatTexts.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, ft.life / 15);
+        ctx.font = 'bold 14px "Microsoft JhengHei", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
 
-      ctx.restore();
-      requestAnimationFrame(updateAndDraw);
+      requestAnimationFrame(gameLoop);
     }
 
-    function damagePlayer() {
-      player.hp--;
-      player.invuln = 75;
-      combo = 0;
-      screenShake = 14;
-      spawnParticles(player.x, player.y, '#ff3b9a', 22);
-      updateHUD();
-      if (player.hp <= 0) {
-        endGame();
-      }
-    }
-
-    // 滑鼠移動控制
-    window.addEventListener('mousemove', (e) => {
-      if (!isRunning) return;
-      player.targetX = e.clientX;
-      player.targetY = e.clientY;
-    });
-
-    // 觸控拖曳控制
-    window.addEventListener('touchmove', (e) => {
-      if (!isRunning) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      player.targetX = touch.clientX;
-      player.targetY = touch.clientY - 35; // 稍微上移避免手指遮住角色
-    }, { passive: false });
-
-    // 鍵盤移動與大招
-    const keys = {};
-    window.addEventListener('keydown', (e) => {
-      keys[e.code] = true;
-      if (e.code === 'Space' || e.code === 'KeyX') {
-        if (isRunning) triggerStarBurst();
-      }
-    });
-    window.addEventListener('keyup', (e) => {
-      keys[e.code] = false;
-    });
-
-    setInterval(() => {
-      if (!isRunning) return;
-      const moveSpeed = 9;
-      if (keys['ArrowLeft'] || keys['KeyA']) player.targetX -= moveSpeed;
-      if (keys['ArrowRight'] || keys['KeyD']) player.targetX += moveSpeed;
-      if (keys['ArrowUp'] || keys['KeyW']) player.targetY -= moveSpeed;
-      if (keys['ArrowDown'] || keys['KeyS']) player.targetY += moveSpeed;
-    }, 16);
-
-    startBtn.addEventListener('click', startGame);
-
-    // 啟動背景動畫循環
-    requestAnimationFrame(updateAndDraw);
+    // 初始化介面並啟動
+    updateHUD();
+    renderShopUI();
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
